@@ -119,7 +119,7 @@ const App: React.FC = () => {
         setGeneratedResponse('');
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const ai = new GoogleGenAI({ apiKey: (window as any).process.env.API_KEY });
             
             const systemInstruction = `You are a highly skilled and professional freelance frontend developer named ${profile.name}.
 Your key skills are: ${profile.skills}.
