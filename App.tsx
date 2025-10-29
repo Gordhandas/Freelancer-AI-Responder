@@ -5,7 +5,6 @@ import { ResponseGenerator } from './components/ResponseGenerator';
 import { Header } from './components/Header';
 import { ProfileData, Tone, HistoryItem, ResponseStyle, GenerationMode, Conversation } from './types';
 import { ConversationList } from './components/ConversationList';
-import { ApiKeyInput } from './components/ApiKeyInput';
 import { GoogleGenAI } from '@google/genai';
 
 const defaultClientMessage = `Hi there,
@@ -45,8 +44,6 @@ const getStyleInstruction = (style: ResponseStyle) => {
 
 
 const App: React.FC = () => {
-    const [apiKey, setApiKey] = useState<string | null>(() => localStorage.getItem('gemini-api-key'));
-
     const [profile, setProfile] = useState<ProfileData>({
         name: 'Gordhan Das',
         skills: 'React, TypeScript, Node.js, Tailwind CSS, UI/UX Design',
@@ -56,25 +53,35 @@ const App: React.FC = () => {
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
     const [isSidebarVisible, setIsSidebarVisible] = useState<boolean>(true);
+    const [isAppVisible, setIsAppVisible] = useState(false);
+
+    useEffect(() => {
+        // Trigger entry animation
+        setIsAppVisible(true);
+    }, []);
     
     // Load conversations from local storage on initial load
     useEffect(() => {
-        const savedConversations = localStorage.getItem('conversations');
-        const savedActiveId = localStorage.getItem('activeConversationId');
-        if (savedConversations) {
-            const parsedConversations = JSON.parse(savedConversations);
-            setConversations(parsedConversations);
-            if (savedActiveId && parsedConversations.some((c: Conversation) => c.id === Number(savedActiveId))) {
-                setActiveConversationId(Number(savedActiveId));
-            } else if (parsedConversations.length > 0) {
-                setActiveConversationId(parsedConversations[0].id);
+        try {
+            const savedConversations = localStorage.getItem('conversations');
+            const savedActiveId = localStorage.getItem('activeConversationId');
+            if (savedConversations) {
+                const parsedConversations = JSON.parse(savedConversations);
+                setConversations(parsedConversations);
+                if (savedActiveId && parsedConversations.some((c: Conversation) => c.id === Number(savedActiveId))) {
+                    setActiveConversationId(Number(savedActiveId));
+                } else if (parsedConversations.length > 0) {
+                    setActiveConversationId(parsedConversations[0].id);
+                }
+            } else {
+                // Initialize with a default conversation if none are saved
+                const initialConversation: Conversation = { id: Date.now(), name: 'Client Conversation 1', history: [] };
+                setConversations([initialConversation]);
+                setActiveConversationId(initialConversation.id);
+                setClientMessage(defaultClientMessage);
             }
-        } else {
-            // Initialize with a default conversation if none are saved
-            const initialConversation: Conversation = { id: Date.now(), name: 'Client Conversation 1', history: [] };
-            setConversations([initialConversation]);
-            setActiveConversationId(initialConversation.id);
-            setClientMessage(defaultClientMessage);
+        } catch (error) {
+            console.error("Failed to parse conversations from localStorage", error);
         }
     }, []);
 
@@ -101,16 +108,7 @@ const App: React.FC = () => {
     const [responseStyle, setResponseStyle] = useState<ResponseStyle>('Default');
     const [generationMode, setGenerationMode] = useState<GenerationMode>('Fast');
     
-    const handleSaveApiKey = (key: string) => {
-        localStorage.setItem('gemini-api-key', key);
-        setApiKey(key);
-    };
-
     const handleGenerateResponse = async () => {
-        if (!apiKey) {
-            setError('API Key is not set. Please enter your API key.');
-            return;
-        }
         if (!clientMessage.trim() || !activeConversation) {
             setError('Please enter a client message and select a conversation.');
             return;
@@ -121,7 +119,7 @@ const App: React.FC = () => {
         setGeneratedResponse('');
 
         try {
-            const ai = new GoogleGenAI({ apiKey });
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             
             const systemInstruction = `You are a highly skilled and professional freelance frontend developer named ${profile.name}.
 Your key skills are: ${profile.skills}.
@@ -185,8 +183,8 @@ Your task is to draft professional, context-aware responses to clients. Follow t
             setClientMessage('');
 
         } catch (err) {
-             const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-             setError(`Failed to generate response. Please check your API key and network connection. Original error: ${errorMessage}`);
+             const errorMessage = err instanceof Error ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : 'An unknown error occurred.';
+             setError(`Failed to generate response. Please check your network connection. Original error: ${errorMessage}`);
              console.error(err);
         } finally {
             setIsLoading(false);
@@ -235,38 +233,36 @@ Your task is to draft professional, context-aware responses to clients. Follow t
 
     const handleRenameConversation = (id: number, newName: string) => {
         const updatedConversations = conversations.map(c => 
-            c.id === id ? { ...c, name: newName } : c
+            c.id === id ? { ...c, name: `${newName} (Edited)` } : c
         );
         setConversations(updatedConversations);
     };
 
-    if (!apiKey) {
-        return <ApiKeyInput onSave={handleSaveApiKey} />;
-    }
-
     return (
-        <div className="min-h-screen bg-gray-900 text-gray-200">
+        <div className={`min-h-screen text-slate-200 transition-opacity duration-500 ${isAppVisible ? 'opacity-100' : 'opacity-0'}`}>
             <Header 
                 onAddNewConversation={handleAddNewConversation}
                 isSidebarVisible={isSidebarVisible}
                 onToggleSidebar={() => setIsSidebarVisible(prev => !prev)}
             />
             <main className="p-4 sm:p-6 md:p-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-                    {isSidebarVisible && (
-                        <div className="lg:col-span-1 flex flex-col gap-8">
-                            <ProfileForm profile={profile} setProfile={setProfile} />
-                            {conversations.length > 0 && activeConversationId && (
-                                <ConversationList 
-                                    conversations={conversations}
-                                    activeConversationId={activeConversationId}
-                                    onSelectConversation={handleSelectConversation}
-                                    onRenameConversation={handleRenameConversation}
-                                />
-                            )}
-                        </div>
-                    )}
-                    <div className={isSidebarVisible ? "lg:col-span-2" : "lg:col-span-3"}>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-8xl mx-auto">
+                    <div className={`lg:col-span-3 transition-all duration-300 ${isSidebarVisible ? 'opacity-100' : 'opacity-0 lg:w-0'}`}>
+                        {isSidebarVisible && (
+                            <div className="flex flex-col gap-8 animate-slide-in-up" style={{ animationDelay: '200ms' }}>
+                                <ProfileForm profile={profile} setProfile={setProfile} />
+                                {conversations.length > 0 && activeConversationId && (
+                                    <ConversationList 
+                                        conversations={conversations}
+                                        activeConversationId={activeConversationId}
+                                        onSelectConversation={handleSelectConversation}
+                                        onRenameConversation={handleRenameConversation}
+                                    />
+                                )}
+                            </div>
+                        )}
+                    </div>
+                    <div className={`transition-all duration-300 ${isSidebarVisible ? "lg:col-span-9" : "lg:col-span-12"}`}>
                         {activeConversation ? (
                              <ResponseGenerator
                                 clientMessage={clientMessage}
@@ -285,8 +281,8 @@ Your task is to draft professional, context-aware responses to clients. Follow t
                                 onClearHistory={handleClearHistory}
                             />
                         ) : (
-                            <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 h-full flex items-center justify-center">
-                                <p className="text-gray-400">Select a conversation or create a new one to get started.</p>
+                            <div className="bg-slate-800/40 p-6 rounded-2xl border border-slate-700 h-full flex items-center justify-center animate-fade-in">
+                                <p className="text-slate-400 text-lg">Select a conversation or create a new one to get started.</p>
                             </div>
                         )}
                     </div>

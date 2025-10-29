@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Conversation } from '../types';
 import { ChatBubbleIcon } from './icons/ChatBubbleIcon';
@@ -41,22 +42,25 @@ export const ConversationList: React.FC<ConversationListProps> = ({
     };
 
     return (
-        <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
+        <div className="bg-slate-800/40 p-6 rounded-2xl shadow-lg border border-slate-700">
+            <h2 className="text-xl font-bold text-white flex items-center gap-3 mb-4">
                 <ChatBubbleIcon />
                 Conversations
             </h2>
-            <div className="space-y-2 max-h-[40vh] overflow-y-auto">
+            <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-2">
                 {conversations.map(convo => (
                     <button
                         key={convo.id}
                         onClick={() => onSelectConversation(convo.id)}
-                        className={`w-full text-left p-3 rounded-lg transition ${
+                        className={`relative w-full text-left p-3 rounded-lg transition-all duration-200 overflow-hidden ${
                             convo.id === activeConversationId
-                                ? 'bg-blue-500/20 text-blue-200'
-                                : 'hover:bg-gray-700/50'
+                                ? 'bg-slate-700/50 text-white'
+                                : 'hover:bg-slate-700/30 text-slate-300'
                         }`}
                     >
+                        {convo.id === activeConversationId && (
+                            <span className="absolute left-0 top-0 h-full w-1 bg-violet-500 rounded-r-full"></span>
+                        )}
                         {editingId === convo.id ? (
                             <input
                                 type="text"
@@ -66,12 +70,12 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                                 onKeyDown={handleKeyDown}
                                 onClick={(e) => e.stopPropagation()}
                                 autoFocus
-                                className="w-full bg-gray-600 text-white p-0 rounded border-none font-medium truncate focus:ring-1 focus:ring-blue-500"
+                                className="w-full bg-slate-600 text-white p-1 rounded border-none font-medium truncate focus:ring-1 focus:ring-violet-500"
                             />
                         ) : (
                             <p 
-                                className="font-medium truncate"
-                                onClick={(e) => {
+                                className="font-semibold truncate"
+                                onDoubleClick={(e) => {
                                     e.stopPropagation();
                                     handleStartEditing(convo.id, convo.name);
                                 }}
@@ -79,7 +83,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                                 {convo.name}
                             </p>
                         )}
-                        <p className="text-xs text-gray-400 truncate mt-1">
+                        <p className="text-xs text-slate-400 truncate mt-1">
                             {convo.history.length > 0 ? convo.history[0].clientMessage : 'No messages yet'}
                         </p>
                     </button>

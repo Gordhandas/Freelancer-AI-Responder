@@ -128,12 +128,12 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
     const handleSaveEdit = () => {
         setIsEditing(false);
     }
-    
+
     const handleCancelEdit = () => {
         setEditableResponse(response); // Revert changes to original response
         setIsEditing(false);
     };
-
+    
     const handleQuickPrompt = (prompt: string) => {
         setClientMessage(prompt);
         clientMessageRef.current?.focus();
@@ -155,7 +155,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                     onChange={(e) => setClientMessage(e.target.value)}
                     placeholder="Paste the client's inquiry here..."
                     rows={8}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-4 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-y text-base placeholder:text-slate-500"
+                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-4 text-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition resize-y text-base placeholder:text-slate-500"
                 />
             </div>
 
@@ -188,7 +188,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                             id={label.toLowerCase()}
                             value={value}
                             onChange={(e) => setter(e.target.value as any)}
-                            className="w-full bg-slate-700 border border-slate-600 rounded-md p-2.5 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition"
+                            className="w-full bg-slate-700 border border-slate-600 rounded-md p-2.5 text-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
                         >
                             {options.map(opt => <option key={opt}>{opt}</option>)}
                         </select>
@@ -201,7 +201,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                 <button
                     onClick={onGenerate}
                     disabled={isLoading}
-                    className="relative flex-grow w-full flex items-center justify-center gap-2 bg-gradient-to-br from-violet-600 via-cyan-500 to-sky-500 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 disabled:from-slate-600 disabled:to-slate-700 disabled:cursor-not-allowed disabled:shadow-none shadow-[0_0_20px_rgba(139,92,246,0.5)] hover:shadow-[0_0_30px_rgba(139,92,246,0.7)]"
+                    className="relative flex-grow w-full flex items-center justify-center gap-2 bg-gradient-to-br from-cyan-500 to-sky-500 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 disabled:from-sky-700 disabled:to-cyan-700 disabled:cursor-not-allowed disabled:shadow-none shadow-[0_0_20px_rgba(6,182,212,0.5)] hover:shadow-[0_0_30px_rgba(6,182,212,0.7)]"
                 >
                     {isLoading ? (
                         <>
@@ -270,7 +270,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                                     value={editableResponse}
                                     onChange={(e) => setEditableResponse(e.target.value)}
                                     rows={10}
-                                    className="w-full bg-slate-900 border border-slate-600 rounded-lg p-4 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-y text-base"
+                                    className="w-full bg-slate-900 border border-slate-600 rounded-lg p-4 text-slate-200 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition resize-y text-base"
                                 />
                                 <div className="flex justify-end gap-2 mt-2">
                                     <button onClick={handleCancelEdit} className="bg-slate-600 hover:bg-slate-500 text-white font-semibold py-2 px-4 rounded-lg transition">Cancel</button>
@@ -279,7 +279,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                             </div>
                         ) : (
                              <div 
-                                className="prose prose-invert prose-p:text-slate-300 prose-headings:text-white prose-strong:text-white prose-a:text-cyan-400 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-violet-500 prose-li:marker:text-cyan-400 max-w-none"
+                                className="prose prose-invert prose-p:text-slate-300 prose-headings:text-white prose-strong:text-white prose-a:text-cyan-400 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-cyan-500 prose-li:marker:text-cyan-400 max-w-none"
                                 dangerouslySetInnerHTML={{ __html: generatedHtml }} 
                              />
                         )
@@ -309,7 +309,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                     {isHistoryVisible && (
                         <div className="space-y-6">
                             {historyHtml.map((item, index) => (
-                                <div key={item.id} className={`p-4 bg-slate-700/30 rounded-lg border border-slate-700/50 transition-all ${index === 0 ? 'border-violet-500/50 shadow-lg shadow-violet-500/5' : ''}`}>
+                                <div key={item.id} className={`p-4 bg-slate-700/30 rounded-lg border border-slate-700/50 transition-all ${index === 0 ? 'border-cyan-500/50 shadow-lg shadow-cyan-500/5' : ''}`}>
                                     <div className="flex justify-between items-center border-b border-slate-600/50 pb-3 mb-3">
                                         <p className="text-sm font-semibold text-slate-300">Client:</p>
                                         <button 
