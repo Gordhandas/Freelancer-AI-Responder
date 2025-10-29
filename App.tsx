@@ -54,10 +54,16 @@ const App: React.FC = () => {
     const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
     const [isSidebarVisible, setIsSidebarVisible] = useState<boolean>(true);
     const [isAppVisible, setIsAppVisible] = useState(false);
+    const [apiKey, setApiKey] = useState<string | null>(null);
 
     useEffect(() => {
         // Trigger entry animation
         setIsAppVisible(true);
+        // Check for API key on mount
+        const storedKey = localStorage.getItem('gemini_api_key');
+        if (storedKey && storedKey !== 'PASTE_YOUR_GEMINI_API_KEY_HERE') {
+            setApiKey(storedKey);
+        }
     }, []);
     
     // Load conversations from local storage on initial load
@@ -109,6 +115,11 @@ const App: React.FC = () => {
     const [generationMode, setGenerationMode] = useState<GenerationMode>('Fast');
     
     const handleGenerateResponse = async () => {
+        if (!apiKey) {
+            setError('API Key is not set. Please set your API key to generate a response.');
+            (window as any).showApiKeyModal();
+            return;
+        }
         if (!clientMessage.trim() || !activeConversation) {
             setError('Please enter a client message and select a conversation.');
             return;
@@ -119,7 +130,7 @@ const App: React.FC = () => {
         setGeneratedResponse('');
 
         try {
-            const ai = new GoogleGenAI({ apiKey: (window as any).process.env.API_KEY });
+            const ai = new GoogleGenAI({ apiKey });
             
             const systemInstruction = `You are a highly skilled and professional freelance frontend developer named ${profile.name}.
 Your key skills are: ${profile.skills}.
@@ -183,8 +194,8 @@ Your task is to draft professional, context-aware responses to clients. Follow t
             setClientMessage('');
 
         } catch (err) {
-             const errorMessage = err instanceof Error ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : 'An unknown error occurred.';
-             setError(`Failed to generate response. Please check your network connection. Original error: ${errorMessage}`);
+             const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+             setError(`Failed to generate response. Please check your API key and network connection. Original error: ${errorMessage}`);
              console.error(err);
         } finally {
             setIsLoading(false);
@@ -265,6 +276,7 @@ Your task is to draft professional, context-aware responses to clients. Follow t
                     <div className={`transition-all duration-300 ${isSidebarVisible ? "lg:col-span-9" : "lg:col-span-12"}`}>
                         {activeConversation ? (
                              <ResponseGenerator
+                                apiKey={apiKey}
                                 clientMessage={clientMessage}
                                 setClientMessage={setClientMessage}
                                 onGenerate={handleGenerateResponse}

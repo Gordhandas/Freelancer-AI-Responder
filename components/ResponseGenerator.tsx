@@ -17,6 +17,7 @@ import { MicrophoneIcon } from './icons/MicrophoneIcon';
 
 
 interface ResponseGeneratorProps {
+    apiKey: string | null;
     clientMessage: string;
     setClientMessage: (message: string) => void;
     onGenerate: () => void;
@@ -42,6 +43,7 @@ declare global {
         hljs: any;
         SpeechRecognition: any;
         webkitSpeechRecognition: any;
+        showApiKeyModal: () => void;
     }
 }
 
@@ -52,6 +54,7 @@ const quickPrompts = [
 ];
 
 export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
+    apiKey,
     clientMessage,
     setClientMessage,
     onGenerate,
@@ -76,6 +79,8 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
     const speechRecognition = useRef<any>(null);
     const clientMessageRef = useRef<HTMLTextAreaElement>(null);
     const responseContainerRef = useRef<HTMLDivElement>(null);
+
+    const isApiKeyMissing = !apiKey;
 
     useEffect(() => {
         setEditableResponse(response);
@@ -204,6 +209,15 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
 
     return (
         <div className="bg-slate-800/40 p-6 rounded-2xl shadow-lg border border-slate-700 flex flex-col gap-6 animate-slide-in-up" style={{ animationDelay: '400ms' }}>
+            {isApiKeyMissing && (
+                <div className="bg-violet-500/10 border border-violet-500/30 text-violet-300 px-4 py-3 rounded-lg text-sm flex items-center justify-between">
+                    <span>Your Gemini API Key is missing. Please set it to enable response generation.</span>
+                    <button onClick={() => window.showApiKeyModal()} className="bg-violet-500/50 hover:bg-violet-500/80 text-white font-bold py-1 px-3 rounded-md transition text-xs">
+                        Set API Key
+                    </button>
+                </div>
+            )}
+            
             {/* Client Message Input */}
             <div>
                 <label htmlFor="clientMessage" className="block text-lg font-bold text-white mb-3 flex items-center gap-2">
@@ -216,16 +230,18 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                         ref={clientMessageRef}
                         value={clientMessage}
                         onChange={(e) => setClientMessage(e.target.value)}
-                        placeholder="Paste the client's inquiry here, or use the microphone to dictate..."
+                        placeholder={isApiKeyMissing ? "Please set your API key to begin..." : "Paste the client's inquiry here, or use the microphone to dictate..."}
                         rows={8}
-                        className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-4 pr-12 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-y text-base placeholder:text-slate-500"
+                        className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-4 pr-12 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-y text-base placeholder:text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={isApiKeyMissing}
                     />
                      <button
                         onClick={handleToggleListening}
-                        disabled={!!speechError && !isListening}
+                        disabled={isApiKeyMissing || (!!speechError && !isListening)}
                         className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-violet-500
                             ${isListening ? 'text-cyan-300 animate-pulse-fast bg-violet-500/50' : 'bg-slate-700/50 hover:bg-slate-700 text-slate-400'}
-                            ${!!speechError && !isListening ? 'cursor-not-allowed bg-red-500/20 text-red-400' : ''}
+                            ${(!!speechError && !isListening) ? 'cursor-not-allowed bg-red-500/20 text-red-400' : ''}
+                            ${isApiKeyMissing ? 'cursor-not-allowed !bg-slate-800 text-slate-600' : ''}
                         `}
                         aria-label={isListening ? 'Stop listening' : 'Start voice input'}
                         title={isListening ? 'Stop listening' : 'Start voice input'}
@@ -237,14 +253,14 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
             </div>
 
             {/* Quick Prompts */}
-            <div className="flex flex-col gap-2">
+            <div className={`flex flex-col gap-2 ${isApiKeyMissing ? 'opacity-50' : ''}`}>
                  <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
                     <BoltIcon />
                     Quick Prompts
                 </h3>
                 <div className="flex flex-wrap gap-2">
                     {quickPrompts.map(prompt => (
-                        <button key={prompt} onClick={() => handleQuickPrompt(prompt)} className="px-3 py-1 bg-slate-700/50 hover:bg-slate-700 rounded-full text-sm text-slate-300 transition-colors">
+                        <button key={prompt} onClick={() => handleQuickPrompt(prompt)} className="px-3 py-1 bg-slate-700/50 hover:bg-slate-700 rounded-full text-sm text-slate-300 transition-colors disabled:cursor-not-allowed disabled:hover:bg-slate-700/50" disabled={isApiKeyMissing}>
                             {prompt}
                         </button>
                     ))}
@@ -252,8 +268,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
             </div>
 
             {/* Generation Controls */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {/* Tone, Style, Mode Selectors */}
+            <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 ${isApiKeyMissing ? 'opacity-50' : ''}`}>
                 {[
                     { label: 'Tone', value: tone, setter: setTone, options: ['Casual', 'Formal', 'Enthusiastic'] },
                     { label: 'Style', value: responseStyle, setter: setResponseStyle, options: ['Default', 'Short & Sweet', 'Detailed Explanation'] },
@@ -265,7 +280,8 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                             id={label.toLowerCase()}
                             value={value}
                             onChange={(e) => setter(e.target.value as any)}
-                            className="w-full bg-slate-700 border border-slate-600 rounded-md p-2.5 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition"
+                            className="w-full bg-slate-700 border border-slate-600 rounded-md p-2.5 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition disabled:cursor-not-allowed"
+                            disabled={isApiKeyMissing}
                         >
                             {options.map(opt => <option key={opt}>{opt}</option>)}
                         </select>
@@ -277,7 +293,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
             <div className="flex items-stretch gap-4 pt-2">
                 <button
                     onClick={onGenerate}
-                    disabled={isLoading}
+                    disabled={isLoading || isApiKeyMissing}
                     className="relative flex-grow w-full flex items-center justify-center gap-2 bg-gradient-to-br from-violet-600 via-cyan-500 to-sky-500 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 disabled:from-slate-600 disabled:to-slate-700 disabled:cursor-not-allowed disabled:shadow-none shadow-[0_0_20px_rgba(139,92,246,0.5)] hover:shadow-[0_0_30px_rgba(139,92,246,0.7)]"
                 >
                     {isLoading ? (
@@ -298,7 +314,8 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                  {error && !isLoading && (
                     <button
                         onClick={onGenerate}
-                        className="flex-shrink-0 flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 px-4 rounded-lg transition"
+                        disabled={isApiKeyMissing}
+                        className="flex-shrink-0 flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 px-4 rounded-lg transition disabled:cursor-not-allowed disabled:hover:bg-slate-600"
                         aria-label="Retry generation"
                     >
                         <RetryIcon />
