@@ -13,6 +13,7 @@ import { BoltIcon } from './icons/BoltIcon';
 import { ToneIcon } from './icons/ToneIcon';
 import { StyleIcon } from './icons/StyleIcon';
 import { ModeIcon } from './icons/ModeIcon';
+import { MicrophoneIcon } from './icons/MicrophoneIcon';
 
 
 interface ResponseGeneratorProps {
@@ -39,6 +40,8 @@ declare global {
             setOptions: (options: any) => void;
         };
         hljs: any;
+        SpeechRecognition: any;
+        webkitSpeechRecognition: any;
     }
 }
 
@@ -68,6 +71,9 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
     const [isHistoryVisible, setIsHistoryVisible] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [editableResponse, setEditableResponse] = useState(response);
+    const [isListening, setIsListening] = useState(false);
+    const [speechError, setSpeechError] = useState<string | null>(null);
+    const speechRecognition = useRef<any>(null);
     const clientMessageRef = useRef<HTMLTextAreaElement>(null);
     const responseContainerRef = useRef<HTMLDivElement>(null);
 
@@ -78,6 +84,62 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
              setTimeout(() => responseContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
         }
     }, [response, isLoading]);
+    
+    // Setup Speech Recognition
+    useEffect(() => {
+        const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognitionAPI) {
+            setSpeechError("Voice input is not supported in this browser.");
+            return;
+        }
+
+        const recognition = new SpeechRecognitionAPI();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (event: any) => {
+            let finalTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript;
+                }
+            }
+             setClientMessage(prev => (prev.trim() ? prev + ' ' : '') + finalTranscript);
+        };
+
+        recognition.onerror = (event: any) => {
+            console.error('Speech recognition error', event.error);
+            setSpeechError(`Voice input error: ${event.error}. Please check microphone permissions.`);
+            setIsListening(false);
+        };
+
+        speechRecognition.current = recognition;
+
+        return () => {
+            if (speechRecognition.current) {
+                speechRecognition.current.stop();
+            }
+        };
+    }, []);
+
+     const handleToggleListening = () => {
+        if (!speechRecognition.current) return;
+
+        if (isListening) {
+            speechRecognition.current.stop();
+            setIsListening(false);
+        } else {
+            setSpeechError(null);
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(() => {
+                speechRecognition.current.start();
+                setIsListening(true);
+            }).catch(() => {
+                 setSpeechError("Microphone access was denied. Please enable it in your browser settings.");
+            });
+        }
+    };
+
 
     useEffect(() => {
         if (window.marked && window.hljs) {
@@ -148,15 +210,30 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                     <MessageIcon />
                     Client's Message
                 </label>
-                <textarea
-                    id="clientMessage"
-                    ref={clientMessageRef}
-                    value={clientMessage}
-                    onChange={(e) => setClientMessage(e.target.value)}
-                    placeholder="Paste the client's inquiry here..."
-                    rows={8}
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-4 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-y text-base placeholder:text-slate-500"
-                />
+                <div className="relative w-full">
+                    <textarea
+                        id="clientMessage"
+                        ref={clientMessageRef}
+                        value={clientMessage}
+                        onChange={(e) => setClientMessage(e.target.value)}
+                        placeholder="Paste the client's inquiry here, or use the microphone to dictate..."
+                        rows={8}
+                        className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-4 pr-12 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-y text-base placeholder:text-slate-500"
+                    />
+                     <button
+                        onClick={handleToggleListening}
+                        disabled={!!speechError && !isListening}
+                        className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-violet-500
+                            ${isListening ? 'text-cyan-300 animate-pulse-fast bg-violet-500/50' : 'bg-slate-700/50 hover:bg-slate-700 text-slate-400'}
+                            ${!!speechError && !isListening ? 'cursor-not-allowed bg-red-500/20 text-red-400' : ''}
+                        `}
+                        aria-label={isListening ? 'Stop listening' : 'Start voice input'}
+                        title={isListening ? 'Stop listening' : 'Start voice input'}
+                    >
+                        <MicrophoneIcon className="h-5 w-5" />
+                    </button>
+                </div>
+                {speechError && <p className="text-xs text-red-400 mt-2">{speechError}</p>}
             </div>
 
             {/* Quick Prompts */}
