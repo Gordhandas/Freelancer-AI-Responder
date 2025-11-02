@@ -1,3 +1,4 @@
+
 # Freelancer AI Responder
 
 An AI-powered tool designed to help freelance developers generate professional, context-aware responses to client inquiries instantly. Personalize the AI with your skills and experience to craft tailored, engaging replies that match your unique voice.
@@ -9,15 +10,15 @@ This application runs **entirely in your browser**. No server or build process i
 ## ✨ Key Features
 
 - **Entirely Client-Side**: No backend, no servers, no build steps. The entire application runs directly in your browser.
-- **AI-Powered Profile**: Configure the AI with your name, skills, and experience summary to generate responses that accurately represent you.
+- **AI-Powered Profile**: Configure the AI with your name, skills, portfolio, and experience summary to generate responses that accurately represent you.
 - **Multi-Client Conversation Management**: Maintain separate, organized conversation histories for each client, ensuring context is never lost.
 - **Context-Aware Responses**: The AI reads the previous conversation history before generating a new reply, ensuring natural and relevant follow-ups.
 - **Voice Input**: Dictate your client messages using your microphone for faster input.
 - **Adjustable Tone & Style**: Fine-tune the AI's communication by choosing between various tones (Casual, Formal, Enthusiastic) and styles (Short & Sweet, Detailed).
 - **Dual Generation Modes**:
-  - **🚀 Fast Mode**: Utilizes `gemini-flash-lite-latest` for low-latency, near-instantaneous responses.
+  - **🚀 Fast Mode**: Utilizes `gemini-2.5-flash` for low-latency, near-instantaneous responses.
   - **🧠 Thinking Mode**: Switches to `gemini-2.5-pro` with a maximum `thinkingBudget` to handle complex client questions and generate more thoughtful, in-depth replies.
-- **Persistent History**: Conversations are automatically saved in your browser's local storage.
+- **Persistent History**: Conversations and your profile are automatically saved in your browser's local storage.
 - **Modern & Responsive Design**: A sleek, animated UI built with Tailwind CSS that works beautifully on all devices.
 
 ## 🛠️ Tech Stack
@@ -39,18 +40,14 @@ This project is a static web application and does not require any installation o
 ### Running the Application
 
 1.  **Download the project files.**
-2.  **Set Your API Key**:
-    -   Open the `index.html` file in a text editor.
-    -   Find the `<script>` tag near the top that contains `window.process = { ... };`.
-    -   Replace the placeholder text `'PASTE_YOUR_GEMINI_API_KEY_HERE'` with your actual Gemini API key.
-    -   Save the file.
-3.  **Open in Browser**: Open the modified `index.html` file directly in your web browser.
+2.  **Open in Browser**: Open the `index.html` file directly in your web browser.
+3.  **Set Your API Key**: When prompted by the modal, enter your Gemini API key. It will be stored securely in your browser's local storage.
 
 That's it! The app is ready to use.
 
 ## 📖 How to Use
 
-1.  **Set Up Your Profile**: On the left sidebar, fill in your name, key skills, and a summary of your professional experience.
+1.  **Set Up Your Profile**: On the left sidebar, fill in your name, key skills, portfolio URL, and a summary of your professional experience. Your profile is saved automatically.
 2.  **Start a New Chat**: Click the "New Chat" button in the header to create a new conversation for a client.
 3.  **Enter the Client's Message**: Type or paste the client's message into the "Client's Message" text area. You can also click the microphone icon to dictate your message.
 4.  **Select Your Preferences**:

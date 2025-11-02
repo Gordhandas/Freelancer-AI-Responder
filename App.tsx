@@ -7,6 +7,18 @@ import { ProfileData, Tone, HistoryItem, ResponseStyle, GenerationMode, Conversa
 import { ConversationList } from './components/ConversationList';
 import { GoogleGenAI } from '@google/genai';
 
+// FIX: Define the AIStudio type to resolve the TypeScript error about subsequent property declarations.
+interface AIStudio {
+    hasSelectedApiKey: () => Promise<boolean>;
+    openSelectKey: () => Promise<void>;
+}
+
+declare global {
+    interface Window {
+        aistudio?: AIStudio;
+    }
+}
+
 const defaultClientMessage = `Hi there,
 
 I came across your profile and I'm really impressed with your work in React and UI/UX design.
@@ -42,28 +54,105 @@ const getStyleInstruction = (style: ResponseStyle) => {
     }
 };
 
+const getSystemInstruction = (profile: ProfileData) => {
+    const portfolioInstruction = profile.portfolioUrl ? `\nMy portfolio/website is available at: ${profile.portfolioUrl}. You can share this link if it's relevant.` : '';
+    const languageInstruction = `\nIMPORTANT: You MUST respond in ${profile.language}.`;
+
+    let roleInstruction = '';
+
+    switch (profile.role) {
+        case 'Student':
+            roleInstruction = `You are a dedicated and bright student named ${profile.name}.
+Your areas of study are: ${profile.skills}.
+Here is a summary of your relevant projects and coursework: ${profile.experience}.${portfolioInstruction}
+
+Your task is to draft clear, respectful, and professional messages for academic purposes (e.g., emailing professors, group project coordination).
+- Always consider the conversation history for context.
+- Clearly state the purpose of your message.
+- Ask questions if you need clarification.
+- Maintain a respectful and slightly formal tone.
+- End with a polite closing.
+- IMPORTANT: Do not introduce yourself as an AI. You are responding as ${profile.name}, the student.`;
+            break;
+        
+        case 'Business Owner':
+             roleInstruction = `You are ${profile.name}, the owner or a representative of a business.
+Your business specializes in: ${profile.skills}.
+About the business: ${profile.experience}.${portfolioInstruction}
+
+Your task is to draft professional responses to customers, partners, or other stakeholders.
+- Use the conversation history to understand the stakeholder's needs and previous interactions.
+- Maintain a professional, helpful, and customer-centric brand voice.
+- Address inquiries or issues directly and offer clear solutions or next steps.
+- End with a clear call to action or a polite closing that strengthens the business relationship.
+- IMPORTANT: Do not introduce yourself as an AI. You are responding on behalf of the business as ${profile.name}.`;
+             break;
+        
+        case 'Freelancer':
+        default:
+            roleInstruction = `You are a highly skilled and professional freelance developer named ${profile.name}.
+Your key skills are: ${profile.skills}.
+Here is a brief summary of your experience: ${profile.experience}.${portfolioInstruction}
+
+Your task is to draft professional, context-aware responses to clients.
+- Consider the entire conversation history to avoid repetition and maintain context.
+- Acknowledge the client's message and express enthusiasm for the project.
+- Briefly mention how your skills are a great fit for their needs.
+- Ask one or two insightful clarifying questions to encourage a conversation.
+- End with a clear and positive call to action.
+- IMPORTANT: Do not introduce yourself as an AI. You are responding as ${profile.name}, the developer.`;
+            break;
+    }
+    return roleInstruction + languageInstruction;
+};
+
 
 const App: React.FC = () => {
-    const [profile, setProfile] = useState<ProfileData>({
-        name: 'Gordhan Das',
-        skills: 'React, TypeScript, Node.js, Tailwind CSS, UI/UX Design',
-        experience: '5+ years of experience building high-quality web applications for clients across various industries. I specialize in creating responsive and performant user interfaces.'
+    const [profile, setProfile] = useState<ProfileData>(() => {
+        try {
+            const savedProfile = localStorage.getItem('freelancerProfile');
+            if (savedProfile) {
+                const parsed = JSON.parse(savedProfile);
+                return {
+                    ...parsed,
+                    role: parsed.role || 'Freelancer', // Backwards compatibility for role
+                    language: parsed.language || 'English', // Backwards compatibility for language
+                };
+            }
+        } catch (error) {
+            console.error("Failed to parse profile from localStorage", error);
+        }
+        return {
+            name: 'Gordhan Das',
+            role: 'Freelancer',
+            language: 'English',
+            skills: 'React, TypeScript, Node.js, Tailwind CSS, UI/UX Design',
+            experience: '5+ years of experience building high-quality web applications for clients across various industries. I specialize in creating responsive and performant user interfaces.',
+            portfolioUrl: ''
+        };
     });
 
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
-    const [isSidebarVisible, setIsSidebarVisible] = useState<boolean>(true);
+    const [isSidebarVisible, setIsSidebarVisible] = useState<boolean>(() => window.innerWidth >= 1024); // lg breakpoint
     const [isAppVisible, setIsAppVisible] = useState(false);
-    const [apiKey, setApiKey] = useState<string | null>(null);
+    const [isApiKeySelected, setIsApiKeySelected] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        const checkApiKey = async () => {
+            if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
+                const hasKey = await window.aistudio.hasSelectedApiKey();
+                setIsApiKeySelected(hasKey);
+            } else {
+                setIsApiKeySelected(false);
+            }
+        };
+        setTimeout(checkApiKey, 50);
+    }, []);
 
     useEffect(() => {
         // Trigger entry animation
         setIsAppVisible(true);
-        // Check for API key on mount
-        const storedKey = localStorage.getItem('gemini_api_key');
-        if (storedKey && storedKey !== 'PASTE_YOUR_GEMINI_API_KEY_HERE') {
-            setApiKey(storedKey);
-        }
     }, []);
     
     // Load conversations from local storage on initial load
@@ -101,6 +190,11 @@ const App: React.FC = () => {
         }
     }, [conversations, activeConversationId]);
 
+    // Save profile to local storage whenever it changes
+    useEffect(() => {
+        localStorage.setItem('freelancerProfile', JSON.stringify(profile));
+    }, [profile]);
+
 
     const activeConversation = useMemo(() => {
         return conversations.find(c => c.id === activeConversationId);
@@ -115,11 +209,6 @@ const App: React.FC = () => {
     const [generationMode, setGenerationMode] = useState<GenerationMode>('Fast');
     
     const handleGenerateResponse = async () => {
-        if (!apiKey) {
-            setError('API Key is not set. Please set your API key to generate a response.');
-            (window as any).showApiKeyModal();
-            return;
-        }
         if (!clientMessage.trim() || !activeConversation) {
             setError('Please enter a client message and select a conversation.');
             return;
@@ -130,29 +219,18 @@ const App: React.FC = () => {
         setGeneratedResponse('');
 
         try {
-            const ai = new GoogleGenAI({ apiKey });
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             
-            const systemInstruction = `You are a highly skilled and professional freelance frontend developer named ${profile.name}.
-Your key skills are: ${profile.skills}.
-Here is a brief summary of your experience: ${profile.experience}.
+            const baseSystemInstruction = getSystemInstruction(profile);
 
-Your task is to draft professional, context-aware responses to clients. Follow these instructions carefully:
-1.  **Context**: Consider the entire conversation history to avoid repetition and maintain context. Your response should flow naturally from the previous messages.
-2.  **Tone**: ${getToneInstruction(tone)}
-3.  **Style**: ${getStyleInstruction(responseStyle)}
-4.  Acknowledge their message and express enthusiasm for the potential project.
-5.  Briefly and naturally mention how your skills are a great fit for their needs based on their message.
-6.  Ask one or two insightful clarifying questions to encourage a conversation.
-7.  End with a clear and positive call to action, inviting them to discuss the project further.
-8.  Maintain a professional yet approachable tone. Do not sound robotic.
-9.  IMPORTANT: Do not introduce yourself as an AI. You are responding as ${profile.name}, the developer.`;
+            const systemInstruction = `${baseSystemInstruction}\n\nFor this specific response, follow these stylistic overrides:\n- Tone: ${getToneInstruction(tone)}\n- Style: ${getStyleInstruction(responseStyle)}`;
             
             const conversationHistory = activeConversation.history.length > 0
             ? `Here is the previous conversation history for context (in chronological order):\n---\n${activeConversation.history.slice().reverse().map(item => `Client: ${item.clientMessage}\nYou (${profile.name}): ${item.generatedResponse}`).join('\n---\n')}\n---`
             : 'This is the first message from the client.';
 
 
-            const userPrompt = `${conversationHistory}\n\nNow, the client has sent a new message:\n"---\n${clientMessage}\n---\"\n\nDraft the next response.`;
+            const userPrompt = `${conversationHistory}\n\nNow, the client has sent a new message:\n"---\n${clientMessage}\n---\"\n\nDraft the next response as ${profile.name}.`;
             
             let modelName;
             const modelConfig: { thinkingConfig?: { thinkingBudget: number } } = {};
@@ -161,7 +239,7 @@ Your task is to draft professional, context-aware responses to clients. Follow t
                 modelName = 'gemini-2.5-pro';
                 modelConfig.thinkingConfig = { thinkingBudget: 32768 };
             } else { // Fast mode
-                modelName = 'gemini-flash-lite-latest';
+                modelName = 'gemini-2.5-flash';
             }
             
             const response = await ai.models.generateContent({
@@ -195,7 +273,12 @@ Your task is to draft professional, context-aware responses to clients. Follow t
 
         } catch (err) {
              const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-             setError(`Failed to generate response. Please check your API key and network connection. Original error: ${errorMessage}`);
+             if (errorMessage.includes('Requested entity was not found')) {
+                setError("Your API key seems to be invalid. Please select a valid key to continue.");
+                setIsApiKeySelected(false);
+            } else {
+                setError(`Failed to generate response. Please check your API key and network connection. Original error: ${errorMessage}`);
+            }
              console.error(err);
         } finally {
             setIsLoading(false);
@@ -249,21 +332,60 @@ Your task is to draft professional, context-aware responses to clients. Follow t
         setConversations(updatedConversations);
     };
 
+    if (isApiKeySelected === null) {
+        return <div className="min-h-screen bg-slate-950"></div>; // Loading state
+    }
+
+    if (!isApiKeySelected) {
+        return (
+            <div className="min-h-screen flex items-center justify-center text-slate-200" style={{ 
+                fontFamily: "'Inter', sans-serif",
+                backgroundColor: 'var(--slate-950)',
+                backgroundImage: 'radial-gradient(circle at top left, var(--slate-800) 0%, var(--slate-950) 30%)'
+            }}>
+                <div className="bg-slate-900 border border-slate-700 rounded-2xl p-8 shadow-2xl w-full max-w-md m-4 animate-slide-in-up" style={{ animationDuration: '0.3s' }}>
+                    <h2 className="text-2xl font-bold text-white mb-2">Gemini API Key Required</h2>
+                    <p className="text-slate-400 mb-6">
+                        This application requires a Google Gemini API key to function. Please select your key to continue.
+                    </p>
+                    <button
+                        onClick={async () => {
+                            if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
+                                await window.aistudio.openSelectKey();
+                                setIsApiKeySelected(true);
+                                setError(null); // Clear previous errors
+                            }
+                        }}
+                        className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 hover:opacity-90 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 shadow-[0_0_15px_rgba(139,92,246,0.5)]"
+                    >
+                        Select API Key
+                    </button>
+                    <p className="text-xs text-slate-500 mt-6 text-center">
+                        API key usage is associated with a Google Cloud project with billing enabled. For more information, see the <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">billing documentation</a>.
+                    </p>
+                    {error && <div className="mt-4 bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm break-words"><pre className="whitespace-pre-wrap font-sans">{error}</pre></div>}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className={`min-h-screen text-slate-200 transition-opacity duration-500 ${isAppVisible ? 'opacity-100' : 'opacity-0'}`}>
             <Header 
+                profile={profile}
                 onAddNewConversation={handleAddNewConversation}
                 isSidebarVisible={isSidebarVisible}
                 onToggleSidebar={() => setIsSidebarVisible(prev => !prev)}
             />
             <main className="p-4 sm:p-6 md:p-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-8xl mx-auto">
-                    <div className={`lg:col-span-3 transition-all duration-300 ${isSidebarVisible ? 'opacity-100' : 'opacity-0 lg:w-0'}`}>
-                        {isSidebarVisible && (
-                            <div className="flex flex-col gap-8 animate-slide-in-up" style={{ animationDelay: '200ms' }}>
+                    {isSidebarVisible && (
+                        <div className="lg:col-span-3 animate-slide-in-up" style={{ animationDelay: '200ms' }}>
+                            <div className="flex flex-col gap-8">
                                 <ProfileForm profile={profile} setProfile={setProfile} />
                                 {conversations.length > 0 && activeConversationId && (
                                     <ConversationList 
+                                        profile={profile}
                                         conversations={conversations}
                                         activeConversationId={activeConversationId}
                                         onSelectConversation={handleSelectConversation}
@@ -271,12 +393,12 @@ Your task is to draft professional, context-aware responses to clients. Follow t
                                     />
                                 )}
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                     <div className={`transition-all duration-300 ${isSidebarVisible ? "lg:col-span-9" : "lg:col-span-12"}`}>
                         {activeConversation ? (
                              <ResponseGenerator
-                                apiKey={apiKey}
+                                profile={profile}
                                 clientMessage={clientMessage}
                                 setClientMessage={setClientMessage}
                                 onGenerate={handleGenerateResponse}

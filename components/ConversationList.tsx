@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { Conversation } from '../types';
+import { Conversation, ProfileData } from '../types';
+import { translations } from '../lib/translations';
 import { ChatBubbleIcon } from './icons/ChatBubbleIcon';
 
 interface ConversationListProps {
@@ -8,6 +9,7 @@ interface ConversationListProps {
     activeConversationId: number;
     onSelectConversation: (id: number) => void;
     onRenameConversation: (id: number, newName: string) => void;
+    profile: ProfileData;
 }
 
 export const ConversationList: React.FC<ConversationListProps> = ({
@@ -15,9 +17,11 @@ export const ConversationList: React.FC<ConversationListProps> = ({
     activeConversationId,
     onSelectConversation,
     onRenameConversation,
+    profile
 }) => {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editingName, setEditingName] = useState<string>('');
+    const t = translations[profile.language];
 
     const handleStartEditing = (id: number, name: string) => {
         setEditingId(id);
@@ -45,7 +49,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
         <div className="bg-slate-800/40 p-6 rounded-2xl shadow-lg border border-slate-700">
             <h2 className="text-xl font-bold text-white flex items-center gap-3 mb-4">
                 <ChatBubbleIcon />
-                Conversations
+                {t.conversations}
             </h2>
             <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-2">
                 {conversations.map(convo => (
@@ -84,7 +88,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                             </p>
                         )}
                         <p className="text-xs text-slate-400 truncate mt-1">
-                            {convo.history.length > 0 ? convo.history[0].clientMessage : 'No messages yet'}
+                            {convo.history.length > 0 ? convo.history[0].clientMessage : t.noMessagesYet}
                         </p>
                     </button>
                 ))}

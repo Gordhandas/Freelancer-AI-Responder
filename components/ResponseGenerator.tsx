@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { CopyIcon } from './icons/CopyIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { MessageIcon } from './icons/MessageIcon';
-import { HistoryItem, Tone, ResponseStyle, GenerationMode } from '../types';
+import { HistoryItem, Tone, ResponseStyle, GenerationMode, ProfileData, UserRole } from '../types';
+import { translations } from '../lib/translations';
 import { HistoryIcon } from './icons/HistoryIcon';
 import { TrashIcon } from './icons/TrashIcon';
 import { ChevronDownIcon } from './icons/ChevronDownIcon';
@@ -17,9 +19,9 @@ import { MicrophoneIcon } from './icons/MicrophoneIcon';
 
 
 interface ResponseGeneratorProps {
-    apiKey: string | null;
     clientMessage: string;
-    setClientMessage: (message: string) => void;
+    // FIX: Use correct React state dispatcher type to allow function updates
+    setClientMessage: React.Dispatch<React.SetStateAction<string>>;
     onGenerate: () => void;
     response: string;
     isLoading: boolean;
@@ -32,6 +34,7 @@ interface ResponseGeneratorProps {
     setGenerationMode: (mode: GenerationMode) => void;
     history: HistoryItem[];
     onClearHistory: () => void;
+    profile: ProfileData;
 }
 
 declare global {
@@ -43,18 +46,10 @@ declare global {
         hljs: any;
         SpeechRecognition: any;
         webkitSpeechRecognition: any;
-        showApiKeyModal: () => void;
     }
 }
 
-const quickPrompts = [
-    'Can you provide more details about the timeline?',
-    'What is the budget for this project?',
-    'Are there any design mockups available?',
-];
-
 export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
-    apiKey,
     clientMessage,
     setClientMessage,
     onGenerate,
@@ -69,6 +64,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
     setGenerationMode,
     history,
     onClearHistory,
+    profile,
 }) => {
     const [copied, setCopied] = useState(false);
     const [isHistoryVisible, setIsHistoryVisible] = useState(true);
@@ -79,8 +75,9 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
     const speechRecognition = useRef<any>(null);
     const clientMessageRef = useRef<HTMLTextAreaElement>(null);
     const responseContainerRef = useRef<HTMLDivElement>(null);
-
-    const isApiKeyMissing = !apiKey;
+    
+    const t = translations[profile.language];
+    const currentPrompts = t.promptLibrary[profile.role] || t.promptLibrary['Freelancer'];
 
     useEffect(() => {
         setEditableResponse(response);
@@ -94,7 +91,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
     useEffect(() => {
         const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognitionAPI) {
-            setSpeechError("Voice input is not supported in this browser.");
+            setSpeechError(t.voiceInputNotSupported);
             return;
         }
 
@@ -115,7 +112,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
 
         recognition.onerror = (event: any) => {
             console.error('Speech recognition error', event.error);
-            setSpeechError(`Voice input error: ${event.error}. Please check microphone permissions.`);
+            setSpeechError(t.voiceInputError(event.error));
             setIsListening(false);
         };
 
@@ -126,7 +123,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                 speechRecognition.current.stop();
             }
         };
-    }, []);
+    }, [t]);
 
      const handleToggleListening = () => {
         if (!speechRecognition.current) return;
@@ -140,7 +137,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                 speechRecognition.current.start();
                 setIsListening(true);
             }).catch(() => {
-                 setSpeechError("Microphone access was denied. Please enable it in your browser settings.");
+                 setSpeechError(t.microphoneAccessDenied);
             });
         }
     };
@@ -209,20 +206,12 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
 
     return (
         <div className="bg-slate-800/40 p-6 rounded-2xl shadow-lg border border-slate-700 flex flex-col gap-6 animate-slide-in-up" style={{ animationDelay: '400ms' }}>
-            {isApiKeyMissing && (
-                <div className="bg-violet-500/10 border border-violet-500/30 text-violet-300 px-4 py-3 rounded-lg text-sm flex items-center justify-between">
-                    <span>Your Gemini API Key is missing. Please set it to enable response generation.</span>
-                    <button onClick={() => window.showApiKeyModal()} className="bg-violet-500/50 hover:bg-violet-500/80 text-white font-bold py-1 px-3 rounded-md transition text-xs">
-                        Set API Key
-                    </button>
-                </div>
-            )}
             
             {/* Client Message Input */}
             <div>
                 <label htmlFor="clientMessage" className="block text-lg font-bold text-white mb-3 flex items-center gap-2">
                     <MessageIcon />
-                    Client's Message
+                    {t.clientMessage}
                 </label>
                 <div className="relative w-full">
                     <textarea
@@ -230,18 +219,16 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                         ref={clientMessageRef}
                         value={clientMessage}
                         onChange={(e) => setClientMessage(e.target.value)}
-                        placeholder={isApiKeyMissing ? "Please set your API key to begin..." : "Paste the client's inquiry here, or use the microphone to dictate..."}
+                        placeholder={t.clientMessagePlaceholder}
                         rows={8}
-                        className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-4 pr-12 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-y text-base placeholder:text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={isApiKeyMissing}
+                        className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-4 pr-12 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-y text-base placeholder:text-slate-500"
                     />
                      <button
                         onClick={handleToggleListening}
-                        disabled={isApiKeyMissing || (!!speechError && !isListening)}
+                        disabled={!!speechError && !isListening}
                         className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-violet-500
                             ${isListening ? 'text-cyan-300 animate-pulse-fast bg-violet-500/50' : 'bg-slate-700/50 hover:bg-slate-700 text-slate-400'}
                             ${(!!speechError && !isListening) ? 'cursor-not-allowed bg-red-500/20 text-red-400' : ''}
-                            ${isApiKeyMissing ? 'cursor-not-allowed !bg-slate-800 text-slate-600' : ''}
                         `}
                         aria-label={isListening ? 'Stop listening' : 'Start voice input'}
                         title={isListening ? 'Stop listening' : 'Start voice input'}
@@ -252,36 +239,42 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                 {speechError && <p className="text-xs text-red-400 mt-2">{speechError}</p>}
             </div>
 
-            {/* Quick Prompts */}
-            <div className={`flex flex-col gap-2 ${isApiKeyMissing ? 'opacity-50' : ''}`}>
-                 <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
+            {/* Prompt Library */}
+            <div className="flex flex-col gap-3">
+                <h3 className="text-base font-semibold text-slate-300 flex items-center gap-2">
                     <BoltIcon />
-                    Quick Prompts
+                    {t.promptLibraryFor(profile.role)}
                 </h3>
-                <div className="flex flex-wrap gap-2">
-                    {quickPrompts.map(prompt => (
-                        <button key={prompt} onClick={() => handleQuickPrompt(prompt)} className="px-3 py-1 bg-slate-700/50 hover:bg-slate-700 rounded-full text-sm text-slate-300 transition-colors disabled:cursor-not-allowed disabled:hover:bg-slate-700/50" disabled={isApiKeyMissing}>
-                            {prompt}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {currentPrompts.map(({ title, prompt }) => (
+                        <button 
+                            key={title} 
+                            onClick={() => handleQuickPrompt(prompt)} 
+                            className="p-3 bg-slate-700/50 hover:bg-slate-700/80 rounded-lg text-left transition-colors text-white text-opacity-90 hover:text-opacity-100"
+                            title={prompt}
+                        >
+                            <p className="font-semibold text-sm text-slate-100">{title}</p>
+                            <p className="text-xs text-slate-400 mt-1 line-clamp-2">{prompt}</p>
                         </button>
                     ))}
                 </div>
             </div>
 
             {/* Generation Controls */}
-            <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 ${isApiKeyMissing ? 'opacity-50' : ''}`}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
-                    { label: 'Tone', value: tone, setter: setTone, options: ['Casual', 'Formal', 'Enthusiastic'] },
-                    { label: 'Style', value: responseStyle, setter: setResponseStyle, options: ['Default', 'Short & Sweet', 'Detailed Explanation'] },
-                    { label: 'Mode', value: generationMode, setter: setGenerationMode, options: ['Fast', 'Thinking'] },
+                    { label: t.tone, value: tone, setter: setTone, options: ['Casual', 'Formal', 'Enthusiastic'] },
+                    { label: t.style, value: responseStyle, setter: setResponseStyle, options: ['Default', 'Short & Sweet', 'Detailed Explanation'] },
+                    { label: t.mode, value: generationMode, setter: setGenerationMode, options: ['Fast', 'Thinking'] },
                 ].map(({ label, value, setter, options }) => (
                      <div key={label}>
                         <label htmlFor={label.toLowerCase()} className="block text-sm font-medium text-slate-400 mb-1">{label}</label>
                         <select
                             id={label.toLowerCase()}
                             value={value}
-                            onChange={(e) => setter(e.target.value as any)}
-                            className="w-full bg-slate-700 border border-slate-600 rounded-md p-2.5 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition disabled:cursor-not-allowed"
-                            disabled={isApiKeyMissing}
+                            // FIX: Use type assertion to fix union type calling issue
+                            onChange={(e) => (setter as (value: string) => void)(e.target.value)}
+                            className="w-full bg-slate-700 border border-slate-600 rounded-md p-2.5 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition"
                         >
                             {options.map(opt => <option key={opt}>{opt}</option>)}
                         </select>
@@ -293,7 +286,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
             <div className="flex items-stretch gap-4 pt-2">
                 <button
                     onClick={onGenerate}
-                    disabled={isLoading || isApiKeyMissing}
+                    disabled={isLoading}
                     className="relative flex-grow w-full flex items-center justify-center gap-2 bg-gradient-to-br from-violet-600 via-cyan-500 to-sky-500 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 disabled:from-slate-600 disabled:to-slate-700 disabled:cursor-not-allowed disabled:shadow-none shadow-[0_0_20px_rgba(139,92,246,0.5)] hover:shadow-[0_0_30px_rgba(139,92,246,0.7)]"
                 >
                     {isLoading ? (
@@ -302,24 +295,23 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Generating...
+                            {t.generating}
                         </>
                     ) : (
                         <>
                             <SparklesIcon />
-                            Generate Response
+                            {t.generateResponse}
                         </>
                     )}
                 </button>
                  {error && !isLoading && (
                     <button
                         onClick={onGenerate}
-                        disabled={isApiKeyMissing}
-                        className="flex-shrink-0 flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 px-4 rounded-lg transition disabled:cursor-not-allowed disabled:hover:bg-slate-600"
+                        className="flex-shrink-0 flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 px-4 rounded-lg transition"
                         aria-label="Retry generation"
                     >
                         <RetryIcon />
-                        <span>Retry</span>
+                        <span>{t.retry}</span>
                     </button>
                 )}
             </div>
@@ -332,20 +324,20 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
             {(response || isLoading) && (
                 <div className="border-t border-slate-700 pt-6">
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-bold text-white">Generated Response</h3>
+                        <h3 className="text-lg font-bold text-white">{t.generatedResponseTitle}</h3>
                         {response && !isEditing && (
                             <div className="flex gap-2">
                                 <button
                                     onClick={() => setIsEditing(true)}
                                     className="flex items-center gap-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold py-1.5 px-3 rounded-lg transition text-sm"
                                     aria-label="Edit response" >
-                                    <EditIcon /> Edit
+                                    <EditIcon /> {t.edit}
                                 </button>
                                 <button
                                     onClick={handleCopy}
                                     className="flex items-center gap-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold py-1.5 px-3 rounded-lg transition text-sm"
                                     aria-label="Copy response" >
-                                    <CopyIcon /> {copied ? 'Copied!' : 'Copy'}
+                                    <CopyIcon /> {copied ? t.copied : t.copy}
                                 </button>
                             </div>
                         )}
@@ -367,8 +359,8 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                                     className="w-full bg-slate-900 border border-slate-600 rounded-lg p-4 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-y text-base"
                                 />
                                 <div className="flex justify-end gap-2 mt-2">
-                                    <button onClick={handleCancelEdit} className="bg-slate-600 hover:bg-slate-500 text-white font-semibold py-2 px-4 rounded-lg transition">Cancel</button>
-                                    <button onClick={handleSaveEdit} className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 px-4 rounded-lg transition">Save</button>
+                                    <button onClick={handleCancelEdit} className="bg-slate-600 hover:bg-slate-500 text-white font-semibold py-2 px-4 rounded-lg transition">{t.cancel}</button>
+                                    <button onClick={handleSaveEdit} className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 px-4 rounded-lg transition">{t.save}</button>
                                 </div>
                             </div>
                         ) : (
@@ -388,7 +380,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                     <div className="flex justify-between items-center mb-4">
                         <button onClick={() => setIsHistoryVisible(!isHistoryVisible)} className="flex items-center gap-2 text-lg font-bold text-white w-full">
                             <HistoryIcon />
-                            Response History
+                            {t.responseHistory}
                             <span className={`transform transition-transform ${isHistoryVisible ? 'rotate-180' : 'rotate-0'}`}>
                                 <ChevronDownIcon />
                             </span>
@@ -396,7 +388,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                         {isHistoryVisible && (
                             <button onClick={onClearHistory} className="flex-shrink-0 flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition">
                                 <TrashIcon />
-                                Clear
+                                {t.clear}
                             </button>
                         )}
                     </div>
@@ -405,17 +397,17 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                             {historyHtml.map((item, index) => (
                                 <div key={item.id} className={`p-4 bg-slate-700/30 rounded-lg border border-slate-700/50 transition-all ${index === 0 ? 'border-violet-500/50 shadow-lg shadow-violet-500/5' : ''}`}>
                                     <div className="flex justify-between items-center border-b border-slate-600/50 pb-3 mb-3">
-                                        <p className="text-sm font-semibold text-slate-300">Client:</p>
+                                        <p className="text-sm font-semibold text-slate-300">{t.client}</p>
                                         <button 
                                             onClick={() => handleReply(item.clientMessage)} 
                                             className="flex items-center gap-1.5 bg-slate-600/50 hover:bg-slate-600 text-slate-300 font-semibold py-1 px-2.5 rounded-md transition text-xs"
                                             aria-label="Reply to this message">
                                             <ReplyIcon />
-                                            Reply
+                                            {t.reply}
                                         </button>
                                     </div>
                                     <p className="text-slate-300 whitespace-pre-wrap text-sm mb-4">{item.clientMessage}</p>
-                                    <p className="text-sm font-semibold text-white mb-3 border-b border-slate-600/50 pb-3">You:</p>
+                                    <p className="text-sm font-semibold text-white mb-3 border-b border-slate-600/50 pb-3">{t.you}</p>
                                     <div 
                                         className="prose prose-sm prose-invert prose-p:text-slate-300 prose-headings:text-white prose-strong:text-white prose-a:text-cyan-400 max-w-none"
                                         dangerouslySetInnerHTML={{ __html: item.generatedResponseHtml }}

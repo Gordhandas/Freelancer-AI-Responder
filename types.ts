@@ -4,10 +4,17 @@ export type ResponseStyle = 'Default' | 'Short & Sweet' | 'Detailed Explanation'
 
 export type GenerationMode = 'Fast' | 'Thinking';
 
+export type UserRole = 'Freelancer' | 'Student' | 'Business Owner';
+
+export type Language = 'English' | 'Spanish' | 'French' | 'Japanese';
+
 export interface ProfileData {
     name: string;
+    role: UserRole;
+    language: Language;
     skills: string;
     experience: string;
+    portfolioUrl?: string;
 }
 
 export interface HistoryItem {
