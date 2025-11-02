@@ -7,13 +7,13 @@ import { ProfileData, Tone, HistoryItem, ResponseStyle, GenerationMode, Conversa
 import { ConversationList } from './components/ConversationList';
 import { GoogleGenAI } from '@google/genai';
 
-// FIX: Define the AIStudio type to resolve the TypeScript error about subsequent property declarations.
-interface AIStudio {
-    hasSelectedApiKey: () => Promise<boolean>;
-    openSelectKey: () => Promise<void>;
-}
-
+// FIX: Moved the AIStudio interface inside `declare global` to resolve the TypeScript error about subsequent property declarations.
 declare global {
+    interface AIStudio {
+        hasSelectedApiKey: () => Promise<boolean>;
+        openSelectKey: () => Promise<void>;
+    }
+
     interface Window {
         aistudio?: AIStudio;
     }
@@ -360,9 +360,6 @@ const App: React.FC = () => {
                     >
                         Select API Key
                     </button>
-                    <p className="text-xs text-slate-500 mt-6 text-center">
-                        API key usage is associated with a Google Cloud project with billing enabled. For more information, see the <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">billing documentation</a>.
-                    </p>
                     {error && <div className="mt-4 bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm break-words"><pre className="whitespace-pre-wrap font-sans">{error}</pre></div>}
                 </div>
             </div>
