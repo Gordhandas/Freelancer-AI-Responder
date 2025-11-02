@@ -7,9 +7,10 @@ import { UserIcon } from './icons/UserIcon';
 interface ProfileFormProps {
     profile: ProfileData;
     setProfile: React.Dispatch<React.SetStateAction<ProfileData>>;
+    onClearApiKey: () => void;
 }
 
-export const ProfileForm: React.FC<ProfileFormProps> = ({ profile, setProfile }) => {
+export const ProfileForm: React.FC<ProfileFormProps> = ({ profile, setProfile, onClearApiKey }) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setProfile(prev => ({ ...prev, [name]: value }));
@@ -119,6 +120,14 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ profile, setProfile })
                         className="w-full bg-slate-700/50 border border-slate-600 rounded-lg p-3 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-y"
                         placeholder={placeholders.experience}
                     />
+                </div>
+                 <div className="pt-2">
+                    <button
+                        onClick={onClearApiKey}
+                        className="w-full text-center text-sm text-slate-400 hover:text-white bg-slate-700/50 hover:bg-slate-700 p-2 rounded-lg transition"
+                    >
+                        Change API Key
+                    </button>
                 </div>
             </div>
         </div>

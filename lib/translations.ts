@@ -38,6 +38,10 @@ type TranslationSet = {
     tone: string;
     style: string;
     mode: string;
+    fast: string;
+    balanced: string;
+    thinking: string;
+    searchTheWeb: string;
     generateResponse: string;
     generating: string;
     retry: string;
@@ -52,6 +56,7 @@ type TranslationSet = {
     client: string;
     reply: string;
     you: string;
+    searchResults: string;
     
     // Quick Prompts by Role
     promptLibrary: Record<UserRole, { title: string, prompt: string }[]>;
@@ -105,6 +110,10 @@ export const translations: Record<Language, TranslationSet> = {
         tone: 'Tone',
         style: 'Style',
         mode: 'Mode',
+        fast: 'Fast',
+        balanced: 'Balanced',
+        thinking: 'Thinking',
+        searchTheWeb: 'Search the web for up-to-date info',
         generateResponse: 'Generate Response',
         generating: 'Generating...',
         retry: 'Retry',
@@ -119,6 +128,7 @@ export const translations: Record<Language, TranslationSet> = {
         client: 'Client:',
         reply: 'Reply',
         you: 'You:',
+        searchResults: 'Sources',
         promptLibrary: {
             'Freelancer': [
                 { title: "Project Inquiry", prompt: "A potential client is asking about my availability and rates for a new web development project." },
@@ -184,6 +194,10 @@ export const translations: Record<Language, TranslationSet> = {
         tone: 'Tono',
         style: 'Estilo',
         mode: 'Modo',
+        fast: 'Rápido',
+        balanced: 'Equilibrado',
+        thinking: 'Pensamiento',
+        searchTheWeb: 'Buscar en la web para información actualizada',
         generateResponse: 'Generar Respuesta',
         generating: 'Generando...',
         retry: 'Reintentar',
@@ -198,6 +212,7 @@ export const translations: Record<Language, TranslationSet> = {
         client: 'Cliente:',
         reply: 'Responder',
         you: 'Tú:',
+        searchResults: 'Fuentes',
         promptLibrary: {
             'Freelancer': [
                 { title: "Consulta de Proyecto", prompt: "Un cliente potencial pregunta sobre mi disponibilidad y tarifas para un nuevo proyecto de desarrollo web." },
@@ -263,6 +278,10 @@ export const translations: Record<Language, TranslationSet> = {
         tone: 'Ton',
         style: 'Style',
         mode: 'Mode',
+        fast: 'Rapide',
+        balanced: 'Équilibré',
+        thinking: 'Réflexion',
+        searchTheWeb: 'Rechercher sur le web pour des informations à jour',
         generateResponse: 'Générer une Réponse',
         generating: 'Génération...',
         retry: 'Réessayer',
@@ -277,6 +296,7 @@ export const translations: Record<Language, TranslationSet> = {
         client: 'Client :',
         reply: 'Répondre',
         you: 'Vous :',
+        searchResults: 'Sources',
         promptLibrary: {
             'Freelancer': [
                 { title: "Demande de Projet", prompt: "Un client potentiel s'interroge sur ma disponibilité et mes tarifs pour un nouveau projet de développement web." },
@@ -342,6 +362,10 @@ export const translations: Record<Language, TranslationSet> = {
         tone: 'トーン',
         style: 'スタイル',
         mode: 'モード',
+        fast: '高速',
+        balanced: 'バランス',
+        thinking: '思考',
+        searchTheWeb: 'ウェブで最新情報を検索',
         generateResponse: '返信を生成',
         generating: '生成中...',
         retry: '再試行',
@@ -356,6 +380,7 @@ export const translations: Record<Language, TranslationSet> = {
         client: 'クライアント:',
         reply: '返信',
         you: 'あなた:',
+        searchResults: 'ソース',
         promptLibrary: {
             'Freelancer': [
                 { title: "プロジェクトの問い合わせ", prompt: "潜在的なクライアントから、新しいウェブ開発プロジェクトの空き状況と料金について問い合わせがありました。" },

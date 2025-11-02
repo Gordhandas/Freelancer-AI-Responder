@@ -2,11 +2,16 @@ export type Tone = 'Casual' | 'Formal' | 'Enthusiastic';
 
 export type ResponseStyle = 'Default' | 'Short & Sweet' | 'Detailed Explanation';
 
-export type GenerationMode = 'Fast' | 'Thinking';
-
 export type UserRole = 'Freelancer' | 'Student' | 'Business Owner';
 
 export type Language = 'English' | 'Spanish' | 'French' | 'Japanese';
+
+export type GenerationMode = 'Fast' | 'Balanced' | 'Thinking';
+
+export interface SearchResult {
+    uri: string;
+    title: string;
+}
 
 export interface ProfileData {
     name: string;
@@ -24,6 +29,7 @@ export interface HistoryItem {
     tone: Tone;
     responseStyle: ResponseStyle;
     generationMode: GenerationMode;
+    searchResults?: SearchResult[];
 }
 
 export interface Conversation {

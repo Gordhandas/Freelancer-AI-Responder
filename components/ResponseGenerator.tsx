@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { CopyIcon } from './icons/CopyIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { MessageIcon } from './icons/MessageIcon';
-import { HistoryItem, Tone, ResponseStyle, GenerationMode, ProfileData, UserRole } from '../types';
+import { HistoryItem, Tone, ResponseStyle, ProfileData, GenerationMode } from '../types';
 import { translations } from '../lib/translations';
 import { HistoryIcon } from './icons/HistoryIcon';
 import { TrashIcon } from './icons/TrashIcon';
@@ -14,13 +14,13 @@ import { ReplyIcon } from './icons/ReplyIcon';
 import { BoltIcon } from './icons/BoltIcon';
 import { ToneIcon } from './icons/ToneIcon';
 import { StyleIcon } from './icons/StyleIcon';
-import { ModeIcon } from './icons/ModeIcon';
 import { MicrophoneIcon } from './icons/MicrophoneIcon';
+import { ModeIcon } from './icons/ModeIcon';
+import { WebIcon } from './icons/WebIcon';
 
 
 interface ResponseGeneratorProps {
     clientMessage: string;
-    // FIX: Use correct React state dispatcher type to allow function updates
     setClientMessage: React.Dispatch<React.SetStateAction<string>>;
     onGenerate: () => void;
     response: string;
@@ -32,6 +32,8 @@ interface ResponseGeneratorProps {
     setResponseStyle: (style: ResponseStyle) => void;
     generationMode: GenerationMode;
     setGenerationMode: (mode: GenerationMode) => void;
+    useSearch: boolean;
+    setUseSearch: (use: boolean) => void;
     history: HistoryItem[];
     onClearHistory: () => void;
     profile: ProfileData;
@@ -62,6 +64,8 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
     setResponseStyle,
     generationMode,
     setGenerationMode,
+    useSearch,
+    setUseSearch,
     history,
     onClearHistory,
     profile,
@@ -78,6 +82,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
     
     const t = translations[profile.language];
     const currentPrompts = t.promptLibrary[profile.role] || t.promptLibrary['Freelancer'];
+    const currentResponseHistoryItem = history.length > 0 ? history[0] : null;
 
     useEffect(() => {
         setEditableResponse(response);
@@ -262,17 +267,28 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
 
             {/* Generation Controls */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                 <div>
+                    <label htmlFor="mode" className="block text-sm font-medium text-slate-400 mb-1">{t.mode}</label>
+                    <select
+                        id="mode"
+                        value={generationMode}
+                        onChange={(e) => setGenerationMode(e.target.value as GenerationMode)}
+                        className="w-full bg-slate-700 border border-slate-600 rounded-md p-2.5 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition"
+                    >
+                        <option value="Fast">{t.fast}</option>
+                        <option value="Balanced">{t.balanced}</option>
+                        <option value="Thinking">{t.thinking}</option>
+                    </select>
+                </div>
                 {[
                     { label: t.tone, value: tone, setter: setTone, options: ['Casual', 'Formal', 'Enthusiastic'] },
                     { label: t.style, value: responseStyle, setter: setResponseStyle, options: ['Default', 'Short & Sweet', 'Detailed Explanation'] },
-                    { label: t.mode, value: generationMode, setter: setGenerationMode, options: ['Fast', 'Thinking'] },
                 ].map(({ label, value, setter, options }) => (
                      <div key={label}>
                         <label htmlFor={label.toLowerCase()} className="block text-sm font-medium text-slate-400 mb-1">{label}</label>
                         <select
                             id={label.toLowerCase()}
                             value={value}
-                            // FIX: Use type assertion to fix union type calling issue
                             onChange={(e) => (setter as (value: string) => void)(e.target.value)}
                             className="w-full bg-slate-700 border border-slate-600 rounded-md p-2.5 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition"
                         >
@@ -281,6 +297,17 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                     </div>
                 ))}
             </div>
+             <div className="flex items-center justify-start pt-2">
+                <label htmlFor="search-toggle" className="flex items-center cursor-pointer select-none">
+                    <div className="relative">
+                        <input type="checkbox" id="search-toggle" className="sr-only" checked={useSearch} onChange={() => setUseSearch(!useSearch)} />
+                        <div className={`block w-12 h-6 rounded-full transition ${useSearch ? 'bg-violet-500' : 'bg-slate-600'}`}></div>
+                        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${useSearch ? 'translate-x-6' : ''}`}></div>
+                    </div>
+                    <span className="ml-3 text-slate-300 font-medium text-sm">{t.searchTheWeb}</span>
+                </label>
+            </div>
+
 
             {/* Action Buttons */}
             <div className="flex items-stretch gap-4 pt-2">
@@ -364,10 +391,34 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                                 </div>
                             </div>
                         ) : (
-                             <div 
-                                className="prose prose-invert prose-p:text-slate-300 prose-headings:text-white prose-strong:text-white prose-a:text-cyan-400 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-violet-500 prose-li:marker:text-cyan-400 max-w-none"
-                                dangerouslySetInnerHTML={{ __html: generatedHtml }} 
-                             />
+                             <>
+                                 <div 
+                                    className="prose prose-invert prose-p:text-slate-300 prose-headings:text-white prose-strong:text-white prose-a:text-cyan-400 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-violet-500 prose-li:marker:text-cyan-400 max-w-none"
+                                    dangerouslySetInnerHTML={{ __html: generatedHtml }} 
+                                 />
+                                 {currentResponseHistoryItem?.searchResults && currentResponseHistoryItem.searchResults.length > 0 && (
+                                     <div className="mt-6 pt-4 border-t border-slate-700/50">
+                                         <h4 className="flex items-center gap-2 text-sm font-semibold text-slate-300 mb-3">
+                                             <WebIcon /> {t.searchResults}
+                                         </h4>
+                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                             {currentResponseHistoryItem.searchResults.map((source, index) => (
+                                                 <a 
+                                                     key={index}
+                                                     href={source.uri}
+                                                     target="_blank"
+                                                     rel="noopener noreferrer"
+                                                     className="bg-slate-700/50 hover:bg-slate-700/80 p-3 rounded-lg truncate transition-colors group"
+                                                     title={source.uri}
+                                                 >
+                                                     <p className="font-semibold text-slate-200 group-hover:text-cyan-400 truncate">{source.title}</p>
+                                                     <p className="text-xs text-slate-400 truncate mt-1">{source.uri}</p>
+                                                 </a>
+                                             ))}
+                                         </div>
+                                     </div>
+                                 )}
+                             </>
                         )
                     )}
                 </div>
@@ -412,10 +463,32 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                                         className="prose prose-sm prose-invert prose-p:text-slate-300 prose-headings:text-white prose-strong:text-white prose-a:text-cyan-400 max-w-none"
                                         dangerouslySetInnerHTML={{ __html: item.generatedResponseHtml }}
                                     />
+                                    {item.searchResults && item.searchResults.length > 0 && (
+                                         <div className="mt-4 pt-4 border-t border-slate-700/50">
+                                             <h4 className="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-2">
+                                                 <WebIcon /> {t.searchResults}
+                                             </h4>
+                                             <div className="grid grid-cols-1 gap-2 text-xs">
+                                                 {item.searchResults.map((source, idx) => (
+                                                     <a 
+                                                         key={idx}
+                                                         href={source.uri}
+                                                         target="_blank"
+                                                         rel="noopener noreferrer"
+                                                         className="bg-slate-600/40 hover:bg-slate-600/70 p-2 rounded-md truncate transition-colors group"
+                                                         title={source.uri}
+                                                     >
+                                                         <p className="font-medium text-slate-300 group-hover:text-cyan-400 truncate">{source.title}</p>
+                                                         <p className="text-slate-500 truncate">{source.uri}</p>
+                                                     </a>
+                                                 ))}
+                                             </div>
+                                         </div>
+                                     )}
                                     <div className="mt-4 pt-4 border-t border-slate-600/50 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-400">
+                                        <div className="flex items-center gap-1.5"><ModeIcon mode={item.generationMode} /><span>{item.generationMode}</span></div>
                                         <div className="flex items-center gap-1.5"><ToneIcon /><span>{item.tone}</span></div>
                                         <div className="flex items-center gap-1.5"><StyleIcon /><span>{item.responseStyle}</span></div>
-                                        <div className="flex items-center gap-1.5"><ModeIcon mode={item.generationMode} /><span>{item.generationMode}</span></div>
                                     </div>
                                 </div>
                             ))}

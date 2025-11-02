@@ -3,21 +3,10 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ProfileForm } from './components/ProfileForm';
 import { ResponseGenerator } from './components/ResponseGenerator';
 import { Header } from './components/Header';
-import { ProfileData, Tone, HistoryItem, ResponseStyle, GenerationMode, Conversation } from './types';
+import { ProfileData, Tone, HistoryItem, ResponseStyle, Conversation, GenerationMode, SearchResult } from './types';
 import { ConversationList } from './components/ConversationList';
 import { GoogleGenAI } from '@google/genai';
-
-// FIX: Moved the AIStudio interface inside `declare global` to resolve the TypeScript error about subsequent property declarations.
-declare global {
-    interface AIStudio {
-        hasSelectedApiKey: () => Promise<boolean>;
-        openSelectKey: () => Promise<void>;
-    }
-
-    interface Window {
-        aistudio?: AIStudio;
-    }
-}
+import { ApiKeyInput } from './components/ApiKeyInput';
 
 const defaultClientMessage = `Hi there,
 
@@ -136,18 +125,18 @@ const App: React.FC = () => {
     const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
     const [isSidebarVisible, setIsSidebarVisible] = useState<boolean>(() => window.innerWidth >= 1024); // lg breakpoint
     const [isAppVisible, setIsAppVisible] = useState(false);
-    const [isApiKeySelected, setIsApiKeySelected] = useState<boolean | null>(null);
+    const [apiKey, setApiKey] = useState<string | null>(null);
+    const [apiKeyError, setApiKeyError] = useState<string | null>(null);
+    const [isAppInitialized, setIsAppInitialized] = useState(false);
+    const [generationMode, setGenerationMode] = useState<GenerationMode>('Balanced');
+    const [useSearch, setUseSearch] = useState<boolean>(false);
 
     useEffect(() => {
-        const checkApiKey = async () => {
-            if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
-                const hasKey = await window.aistudio.hasSelectedApiKey();
-                setIsApiKeySelected(hasKey);
-            } else {
-                setIsApiKeySelected(false);
-            }
-        };
-        setTimeout(checkApiKey, 50);
+        const savedKey = localStorage.getItem('geminiApiKey');
+        if (savedKey) {
+            setApiKey(savedKey);
+        }
+        setIsAppInitialized(true); // Allow rendering after checking storage
     }, []);
 
     useEffect(() => {
@@ -206,11 +195,21 @@ const App: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [tone, setTone] = useState<Tone>('Casual');
     const [responseStyle, setResponseStyle] = useState<ResponseStyle>('Default');
-    const [generationMode, setGenerationMode] = useState<GenerationMode>('Fast');
     
+    const handleSaveApiKey = (key: string) => {
+        localStorage.setItem('geminiApiKey', key);
+        setApiKey(key);
+        setApiKeyError(null);
+    };
+
     const handleGenerateResponse = async () => {
         if (!clientMessage.trim() || !activeConversation) {
             setError('Please enter a client message and select a conversation.');
+            return;
+        }
+        if (!apiKey) {
+            setError('API Key is not set.');
+            setApiKeyError('Your API key is missing. Please enter it to continue.');
             return;
         }
 
@@ -219,7 +218,7 @@ const App: React.FC = () => {
         setGeneratedResponse('');
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const ai = new GoogleGenAI({ apiKey });
             
             const baseSystemInstruction = getSystemInstruction(profile);
 
@@ -232,27 +231,42 @@ const App: React.FC = () => {
 
             const userPrompt = `${conversationHistory}\n\nNow, the client has sent a new message:\n"---\n${clientMessage}\n---\"\n\nDraft the next response as ${profile.name}.`;
             
-            let modelName;
-            const modelConfig: { thinkingConfig?: { thinkingBudget: number } } = {};
+            let modelName: string;
+            const config: any = { systemInstruction };
 
-            if (generationMode === 'Thinking') {
-                modelName = 'gemini-2.5-pro';
-                modelConfig.thinkingConfig = { thinkingBudget: 32768 };
-            } else { // Fast mode
-                modelName = 'gemini-2.5-flash';
+            switch (generationMode) {
+                case 'Fast':
+                    modelName = 'gemini-flash-lite-latest';
+                    break;
+                case 'Thinking':
+                    modelName = 'gemini-2.5-pro';
+                    config.thinkingConfig = { thinkingBudget: 32768 };
+                    break;
+                case 'Balanced':
+                default:
+                    modelName = 'gemini-2.5-flash';
+                    break;
+            }
+            
+            if (useSearch) {
+                config.tools = [{googleSearch: {}}];
             }
             
             const response = await ai.models.generateContent({
                 model: modelName,
                 contents: userPrompt,
-                config: {
-                    systemInstruction,
-                    ...modelConfig,
-                },
+                config,
             });
 
             const responseText = response.text;
             setGeneratedResponse(responseText);
+
+            const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+            const searchResults: SearchResult[] = groundingChunks
+                ?.map((chunk: any) => chunk.web)
+                .filter(Boolean)
+                .map((webChunk: any) => ({ uri: webChunk.uri, title: webChunk.title }))
+                .filter((v: SearchResult, i: number, a: SearchResult[]) => a.findIndex(t => t.uri === v.uri) === i) || [];
             
             const newHistoryItem: HistoryItem = {
                 id: Date.now(),
@@ -261,6 +275,7 @@ const App: React.FC = () => {
                 tone,
                 responseStyle,
                 generationMode,
+                searchResults,
             };
 
             const updatedConversations = conversations.map(c => 
@@ -273,11 +288,13 @@ const App: React.FC = () => {
 
         } catch (err) {
              const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-             if (errorMessage.includes('Requested entity was not found')) {
-                setError("Your API key seems to be invalid. Please select a valid key to continue.");
-                setIsApiKeySelected(false);
+             if (errorMessage.includes('API key not valid')) {
+                setError("Your API key seems to be invalid. Please enter a valid one.");
+                setApiKeyError("Your API key is invalid. Please enter a valid key to continue.");
+                localStorage.removeItem('geminiApiKey');
+                setApiKey(null);
             } else {
-                setError(`Failed to generate response. Please check your API key and network connection. Original error: ${errorMessage}`);
+                setError(`Failed to generate response. Please check your network connection. Original error: ${errorMessage}`);
             }
              console.error(err);
         } finally {
@@ -332,38 +349,12 @@ const App: React.FC = () => {
         setConversations(updatedConversations);
     };
 
-    if (isApiKeySelected === null) {
-        return <div className="min-h-screen bg-slate-950"></div>; // Loading state
+    if (!isAppInitialized) {
+        return <div className="min-h-screen bg-slate-950"></div>; // Loading state before we check for API key
     }
 
-    if (!isApiKeySelected) {
-        return (
-            <div className="min-h-screen flex items-center justify-center text-slate-200" style={{ 
-                fontFamily: "'Inter', sans-serif",
-                backgroundColor: 'var(--slate-950)',
-                backgroundImage: 'radial-gradient(circle at top left, var(--slate-800) 0%, var(--slate-950) 30%)'
-            }}>
-                <div className="bg-slate-900 border border-slate-700 rounded-2xl p-8 shadow-2xl w-full max-w-md m-4 animate-slide-in-up" style={{ animationDuration: '0.3s' }}>
-                    <h2 className="text-2xl font-bold text-white mb-2">Gemini API Key Required</h2>
-                    <p className="text-slate-400 mb-6">
-                        This application requires a Google Gemini API key to function. Please select your key to continue.
-                    </p>
-                    <button
-                        onClick={async () => {
-                            if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
-                                await window.aistudio.openSelectKey();
-                                setIsApiKeySelected(true);
-                                setError(null); // Clear previous errors
-                            }
-                        }}
-                        className="w-full bg-gradient-to-r from-cyan-500 to-violet-500 hover:opacity-90 text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 shadow-[0_0_15px_rgba(139,92,246,0.5)]"
-                    >
-                        Select API Key
-                    </button>
-                    {error && <div className="mt-4 bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm break-words"><pre className="whitespace-pre-wrap font-sans">{error}</pre></div>}
-                </div>
-            </div>
-        );
+    if (!apiKey) {
+        return <ApiKeyInput onSave={handleSaveApiKey} initialError={apiKeyError} />;
     }
 
     return (
@@ -379,7 +370,14 @@ const App: React.FC = () => {
                     {isSidebarVisible && (
                         <div className="lg:col-span-3 animate-slide-in-up" style={{ animationDelay: '200ms' }}>
                             <div className="flex flex-col gap-8">
-                                <ProfileForm profile={profile} setProfile={setProfile} />
+                                <ProfileForm 
+                                    profile={profile} 
+                                    setProfile={setProfile}
+                                    onClearApiKey={() => {
+                                        setApiKey(null);
+                                        localStorage.removeItem('geminiApiKey');
+                                    }}
+                                />
                                 {conversations.length > 0 && activeConversationId && (
                                     <ConversationList 
                                         profile={profile}
@@ -408,6 +406,8 @@ const App: React.FC = () => {
                                 setResponseStyle={setResponseStyle}
                                 generationMode={generationMode}
                                 setGenerationMode={setGenerationMode}
+                                useSearch={useSearch}
+                                setUseSearch={setUseSearch}
                                 history={activeConversation?.history || []}
                                 onClearHistory={handleClearHistory}
                             />
