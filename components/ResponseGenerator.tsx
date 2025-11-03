@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { CopyIcon } from './icons/CopyIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
@@ -226,7 +225,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                         onChange={(e) => setClientMessage(e.target.value)}
                         placeholder={t.clientMessagePlaceholder}
                         rows={8}
-                        className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-4 pr-12 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-y text-base placeholder:text-slate-500"
+                        className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-4 pr-12 pb-12 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-y text-base placeholder:text-slate-500"
                     />
                      <button
                         onClick={handleToggleListening}
@@ -239,6 +238,16 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                         title={isListening ? 'Stop listening' : 'Start voice input'}
                     >
                         <MicrophoneIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                        onClick={() => setUseSearch(!useSearch)}
+                        className={`absolute bottom-3 right-3 p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-violet-500
+                            ${useSearch ? 'text-cyan-300 bg-violet-500/50' : 'bg-slate-700/50 hover:bg-slate-700 text-slate-400'}
+                        `}
+                        aria-pressed={useSearch}
+                        title={t.searchTheWeb}
+                    >
+                        <WebIcon />
                     </button>
                 </div>
                 {speechError && <p className="text-xs text-red-400 mt-2">{speechError}</p>}
