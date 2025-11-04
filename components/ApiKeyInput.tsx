@@ -51,7 +51,7 @@ export const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onSave, initialError }
             onChange={(e) => setApiKey(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
             placeholder="Enter your API key here"
-            className={`w-full bg-[var(--color-surface-secondary)] border ${combinedError ? 'border-red-500/50' : 'border-[var(--color-border)]'} rounded-lg p-3 text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] transition`}
+            className={`w-full bg-[var(--color-surface-secondary)] border ${combinedError ? 'border-red-500/50' : 'border-[var(--color-border)]'} rounded-lg p-3 text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] transition placeholder:text-[var(--color-text-placeholder)]`}
             aria-invalid={!!combinedError}
             aria-describedby="api-key-error"
             title={t.tooltips.apiKey}

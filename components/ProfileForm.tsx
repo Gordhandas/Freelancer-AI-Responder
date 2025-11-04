@@ -38,7 +38,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ profile, setProfile, o
                         id="name"
                         value={profile.name}
                         onChange={handleChange}
-                        className="w-full bg-transparent border-b-2 border-[var(--color-border)] focus:border-[var(--color-border-focus)] p-2 text-[var(--color-text-primary)] focus:outline-none focus:ring-0 transition duration-300"
+                        className="w-full bg-transparent border-b-2 border-[var(--color-border)] focus:border-[var(--color-border-focus)] p-2 text-[var(--color-text-primary)] focus:outline-none focus:ring-0 transition duration-300 placeholder:text-[var(--color-text-placeholder)]"
                         placeholder={t.yourNamePlaceholder}
                         title={t.tooltips.name}
                     />
@@ -96,7 +96,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ profile, setProfile, o
                         id="skills"
                         value={profile.skills}
                         onChange={handleChange}
-                        className="w-full bg-transparent border-b-2 border-[var(--color-border)] focus:border-[var(--color-border-focus)] p-2 text-[var(--color-text-primary)] focus:outline-none focus:ring-0 transition duration-300"
+                        className="w-full bg-transparent border-b-2 border-[var(--color-border)] focus:border-[var(--color-border-focus)] p-2 text-[var(--color-text-primary)] focus:outline-none focus:ring-0 transition duration-300 placeholder:text-[var(--color-text-placeholder)]"
                         placeholder={placeholders.skills}
                         title={t.tooltips.skills(profile.role)}
                     />
@@ -109,7 +109,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ profile, setProfile, o
                         id="portfolioUrl"
                         value={profile.portfolioUrl || ''}
                         onChange={handleChange}
-                        className="w-full bg-transparent border-b-2 border-[var(--color-border)] focus:border-[var(--color-border-focus)] p-2 text-[var(--color-text-primary)] focus:outline-none focus:ring-0 transition duration-300"
+                        className="w-full bg-transparent border-b-2 border-[var(--color-border)] focus:border-[var(--color-border-focus)] p-2 text-[var(--color-text-primary)] focus:outline-none focus:ring-0 transition duration-300 placeholder:text-[var(--color-text-placeholder)]"
                         placeholder={portfolioPlaceholder}
                         title={t.tooltips.portfolio(profile.role)}
                     />
@@ -122,7 +122,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ profile, setProfile, o
                         value={profile.experience}
                         onChange={handleChange}
                         rows={4}
-                        className="w-full bg-[var(--color-interactive)]/50 border border-[var(--color-border)] rounded-lg p-3 text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] transition resize-y"
+                        className="w-full bg-[var(--color-interactive)]/50 border border-[var(--color-border)] rounded-lg p-3 text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] transition resize-y placeholder:text-[var(--color-text-placeholder)]"
                         placeholder={placeholders.experience}
                         title={t.tooltips.experience(profile.role)}
                     />

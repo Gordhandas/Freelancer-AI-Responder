@@ -16,6 +16,7 @@ import { StyleIcon } from './icons/StyleIcon';
 import { MicrophoneIcon } from './icons/MicrophoneIcon';
 import { ModeIcon } from './icons/ModeIcon';
 import { WebIcon } from './icons/WebIcon';
+import { LoadingIndicator } from './LoadingIndicator';
 
 
 interface ResponseGeneratorProps {
@@ -386,11 +387,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                         )}
                     </div>
                     {isLoading && !response && (
-                        <div className="space-y-4">
-                            <div className="h-4 shimmer rounded w-3/4"></div>
-                            <div className="h-4 shimmer rounded w-full"></div>
-                            <div className="h-4 shimmer rounded w-5/6"></div>
-                        </div>
+                        <LoadingIndicator profile={profile} />
                     )}
                     {response && (
                         isEditing ? (

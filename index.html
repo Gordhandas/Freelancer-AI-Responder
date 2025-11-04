@@ -53,7 +53,7 @@
             --color-interactive-hover: #475569; /* slate-600 */
             --color-text-primary: #e2e8f0; /* slate-200 */
             --color-text-secondary: #94a3b8; /* slate-400 */
-            --color-text-placeholder: #475569; /* slate-600 */
+            --color-text-placeholder: #64748b; /* slate-500 */
             --color-border: #334155; /* slate-700 */
             --color-border-focus: #8b5cf6; /* violet-500 */
             --color-prose-blockquote-border: #8b5cf6;
@@ -131,11 +131,18 @@
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
         .animate-fade-in {
             animation: fadeIn 0.5s ease-out forwards;
         }
         .animate-slide-in-up {
             animation: slideInUp 0.5s ease-out forwards;
+        }
+        .animate-spin-slow {
+            animation: spin-slow 3s linear infinite;
         }
 
         /* Shimmer loading animation */

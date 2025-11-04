@@ -46,6 +46,7 @@ type TranslationSet = {
     searchTheWeb: string;
     generateResponse: string;
     generating: string;
+    generatingMessages: string[];
     retry: string;
     generatedResponseTitle: string;
     edit: string;
@@ -170,6 +171,13 @@ export const translations: Record<Language, TranslationSet> = {
         searchTheWeb: 'Search the web for up-to-date info',
         generateResponse: 'Generate Response',
         generating: 'Generating...',
+        generatingMessages: [
+            'Analyzing your request...',
+            'Consulting the knowledge base...',
+            'Crafting a thoughtful response...',
+            'Polishing the final draft...',
+            'Just a moment longer...',
+        ],
         retry: 'Retry',
         generatedResponseTitle: 'Generated Response',
         edit: 'Edit',
@@ -293,6 +301,13 @@ export const translations: Record<Language, TranslationSet> = {
         searchTheWeb: 'Buscar en la web para información actualizada',
         generateResponse: 'Generar Respuesta',
         generating: 'Generando...',
+        generatingMessages: [
+            'Analizando tu solicitud...',
+            'Consultando la base de conocimientos...',
+            'Elaborando una respuesta detallada...',
+            'Puliendo el borrador final...',
+            'Un momento más, por favor...',
+        ],
         retry: 'Reintentar',
         generatedResponseTitle: 'Respuesta Generada',
         edit: 'Editar',
@@ -416,6 +431,13 @@ export const translations: Record<Language, TranslationSet> = {
         searchTheWeb: 'Rechercher sur le web pour des informations à jour',
         generateResponse: 'Générer une Réponse',
         generating: 'Génération...',
+        generatingMessages: [
+            'Analyse de votre demande...',
+            'Consultation de la base de connaissances...',
+            'Rédaction d\'une réponse réfléchie...',
+            'Peaufinage de la version finale...',
+            'Juste un instant de plus...',
+        ],
         retry: 'Réessayer',
         generatedResponseTitle: 'Réponse Générée',
         edit: 'Modifier',
@@ -539,6 +561,13 @@ export const translations: Record<Language, TranslationSet> = {
         searchTheWeb: 'ウェブで最新情報を検索',
         generateResponse: '返信を生成',
         generating: '生成中...',
+        generatingMessages: [
+            'リクエストを分析中...',
+            '知識ベースを参照中...',
+            '丁寧な回答を作成中...',
+            '最終稿を推敲中...',
+            'もうしばらくお待ちください...',
+        ],
         retry: '再試行',
         generatedResponseTitle: '生成された返信',
         edit: '編集',
