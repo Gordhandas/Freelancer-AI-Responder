@@ -209,11 +209,11 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
 
 
     return (
-        <div className="bg-slate-800/40 p-6 rounded-2xl shadow-lg border border-slate-700 flex flex-col gap-6 animate-slide-in-up" style={{ animationDelay: '400ms' }}>
+        <div className="bg-[var(--color-surface-secondary)]/60 p-6 rounded-2xl shadow-lg border border-[var(--color-border)] flex flex-col gap-6 animate-slide-in-up" style={{ animationDelay: '400ms' }}>
             
             {/* Client Message Input */}
             <div>
-                <label htmlFor="clientMessage" className="block text-lg font-bold text-white mb-3 flex items-center gap-2">
+                <label htmlFor="clientMessage" className="block text-lg font-bold text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
                     <MessageIcon />
                     {t.clientMessage}
                 </label>
@@ -225,27 +225,28 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                         onChange={(e) => setClientMessage(e.target.value)}
                         placeholder={t.clientMessagePlaceholder}
                         rows={8}
-                        className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-4 pr-12 pb-12 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-y text-base placeholder:text-slate-500"
+                        className="w-full bg-[var(--color-surface)]/50 border border-[var(--color-border)] rounded-lg p-4 pr-12 pb-12 text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] transition resize-y text-base placeholder:text-[var(--color-text-placeholder)]"
+                        title={t.tooltips.clientMessage}
                     />
                      <button
                         onClick={handleToggleListening}
                         disabled={!!speechError && !isListening}
                         className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-violet-500
-                            ${isListening ? 'text-cyan-300 animate-pulse-fast bg-violet-500/50' : 'bg-slate-700/50 hover:bg-slate-700 text-slate-400'}
+                            ${isListening ? 'text-cyan-300 animate-pulse-fast bg-violet-500/50' : 'bg-[var(--color-interactive)]/50 hover:bg-[var(--color-interactive-hover)] text-[var(--color-text-secondary)]'}
                             ${(!!speechError && !isListening) ? 'cursor-not-allowed bg-red-500/20 text-red-400' : ''}
                         `}
                         aria-label={isListening ? 'Stop listening' : 'Start voice input'}
-                        title={isListening ? 'Stop listening' : 'Start voice input'}
+                        title={isListening ? t.tooltips.voiceInputStop : (speechError ? t.tooltips.voiceInputNotSupported : t.tooltips.voiceInputStart)}
                     >
                         <MicrophoneIcon className="h-5 w-5" />
                     </button>
                     <button
                         onClick={() => setUseSearch(!useSearch)}
                         className={`absolute bottom-3 right-3 p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-violet-500
-                            ${useSearch ? 'text-cyan-300 bg-violet-500/50' : 'bg-slate-700/50 hover:bg-slate-700 text-slate-400'}
+                            ${useSearch ? 'text-cyan-300 bg-violet-500/50' : 'bg-[var(--color-interactive)]/50 hover:bg-[var(--color-interactive-hover)] text-[var(--color-text-secondary)]'}
                         `}
                         aria-pressed={useSearch}
-                        title={t.searchTheWeb}
+                        title={t.tooltips.toggleWebSearch}
                     >
                         <WebIcon />
                     </button>
@@ -255,7 +256,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
 
             {/* Prompt Library */}
             <div className="flex flex-col gap-3">
-                <h3 className="text-base font-semibold text-slate-300 flex items-center gap-2">
+                <h3 className="text-base font-semibold text-[var(--color-text-secondary)] flex items-center gap-2">
                     <BoltIcon />
                     {t.promptLibraryFor(profile.role)}
                 </h3>
@@ -264,11 +265,11 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                         <button 
                             key={title} 
                             onClick={() => handleQuickPrompt(prompt)} 
-                            className="p-3 bg-slate-700/50 hover:bg-slate-700/80 rounded-lg text-left transition-colors text-white text-opacity-90 hover:text-opacity-100"
-                            title={prompt}
+                            className="p-3 bg-[var(--color-interactive)]/50 hover:bg-[var(--color-interactive)]/80 rounded-lg text-left transition-colors text-[var(--color-text-primary)] text-opacity-90 hover:text-opacity-100"
+                            title={t.tooltips.quickPrompt(prompt)}
                         >
-                            <p className="font-semibold text-sm text-slate-100">{title}</p>
-                            <p className="text-xs text-slate-400 mt-1 line-clamp-2">{prompt}</p>
+                            <p className="font-semibold text-sm text-[var(--color-text-primary)]">{title}</p>
+                            <p className="text-xs text-[var(--color-text-secondary)] mt-1 line-clamp-2">{prompt}</p>
                         </button>
                     ))}
                 </div>
@@ -277,12 +278,13 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
             {/* Generation Controls */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                  <div>
-                    <label htmlFor="mode" className="block text-sm font-medium text-slate-400 mb-1">{t.mode}</label>
+                    <label htmlFor="mode" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">{t.mode}</label>
                     <select
                         id="mode"
                         value={generationMode}
                         onChange={(e) => setGenerationMode(e.target.value as GenerationMode)}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-md p-2.5 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition"
+                        className="w-full bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] rounded-md p-2.5 text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] transition"
+                        title={t.tooltips.generationMode}
                     >
                         <option value="Fast">{t.fast}</option>
                         <option value="Balanced">{t.balanced}</option>
@@ -294,12 +296,13 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                     { label: t.style, value: responseStyle, setter: setResponseStyle, options: ['Default', 'Short & Sweet', 'Detailed Explanation'] },
                 ].map(({ label, value, setter, options }) => (
                      <div key={label}>
-                        <label htmlFor={label.toLowerCase()} className="block text-sm font-medium text-slate-400 mb-1">{label}</label>
+                        <label htmlFor={label.toLowerCase()} className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">{label}</label>
                         <select
                             id={label.toLowerCase()}
                             value={value}
                             onChange={(e) => (setter as (value: string) => void)(e.target.value)}
-                            className="w-full bg-slate-700 border border-slate-600 rounded-md p-2.5 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition"
+                            className="w-full bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] rounded-md p-2.5 text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] transition"
+                            title={label === t.tone ? t.tooltips.tone : t.tooltips.style}
                         >
                             {options.map(opt => <option key={opt}>{opt}</option>)}
                         </select>
@@ -307,13 +310,13 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                 ))}
             </div>
              <div className="flex items-center justify-start pt-2">
-                <label htmlFor="search-toggle" className="flex items-center cursor-pointer select-none">
+                <label htmlFor="search-toggle" className="flex items-center cursor-pointer select-none" title={t.tooltips.toggleWebSearch}>
                     <div className="relative">
                         <input type="checkbox" id="search-toggle" className="sr-only" checked={useSearch} onChange={() => setUseSearch(!useSearch)} />
-                        <div className={`block w-12 h-6 rounded-full transition ${useSearch ? 'bg-violet-500' : 'bg-slate-600'}`}></div>
+                        <div className={`block w-12 h-6 rounded-full transition ${useSearch ? 'bg-violet-500' : 'bg-[var(--color-interactive)]'}`}></div>
                         <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${useSearch ? 'translate-x-6' : ''}`}></div>
                     </div>
-                    <span className="ml-3 text-slate-300 font-medium text-sm">{t.searchTheWeb}</span>
+                    <span className="ml-3 text-[var(--color-text-secondary)] font-medium text-sm">{t.searchTheWeb}</span>
                 </label>
             </div>
 
@@ -324,6 +327,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                     onClick={onGenerate}
                     disabled={isLoading}
                     className="relative flex-grow w-full flex items-center justify-center gap-2 bg-gradient-to-br from-violet-600 via-cyan-500 to-sky-500 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 disabled:from-slate-600 disabled:to-slate-700 disabled:cursor-not-allowed disabled:shadow-none shadow-[0_0_20px_rgba(139,92,246,0.5)] hover:shadow-[0_0_30px_rgba(139,92,246,0.7)]"
+                    title={!isLoading ? t.tooltips.generateResponse : undefined}
                 >
                     {isLoading ? (
                         <>
@@ -343,8 +347,9 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                  {error && !isLoading && (
                     <button
                         onClick={onGenerate}
-                        className="flex-shrink-0 flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 px-4 rounded-lg transition"
+                        className="flex-shrink-0 flex items-center justify-center gap-2 bg-[var(--color-interactive)] hover:bg-[var(--color-interactive-hover)] text-[var(--color-text-primary)] font-bold py-3 px-4 rounded-lg transition"
                         aria-label="Retry generation"
+                        title={t.tooltips.retry}
                     >
                         <RetryIcon />
                         <span>{t.retry}</span>
@@ -358,21 +363,23 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
             {/* Generated Response */}
             <div ref={responseContainerRef} className="scroll-mt-8">
             {(response || isLoading) && (
-                <div className="border-t border-slate-700 pt-6">
+                <div className="border-t border-[var(--color-border)] pt-6">
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-bold text-white">{t.generatedResponseTitle}</h3>
+                        <h3 className="text-lg font-bold text-[var(--color-text-primary)]">{t.generatedResponseTitle}</h3>
                         {response && !isEditing && (
                             <div className="flex gap-2">
                                 <button
                                     onClick={() => setIsEditing(true)}
-                                    className="flex items-center gap-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold py-1.5 px-3 rounded-lg transition text-sm"
-                                    aria-label="Edit response" >
+                                    className="flex items-center gap-1.5 bg-[var(--color-interactive)] hover:bg-[var(--color-interactive-hover)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] font-semibold py-1.5 px-3 rounded-lg transition text-sm"
+                                    aria-label="Edit response" 
+                                    title={t.tooltips.editResponse}>
                                     <EditIcon /> {t.edit}
                                 </button>
                                 <button
                                     onClick={handleCopy}
-                                    className="flex items-center gap-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold py-1.5 px-3 rounded-lg transition text-sm"
-                                    aria-label="Copy response" >
+                                    className="flex items-center gap-1.5 bg-[var(--color-interactive)] hover:bg-[var(--color-interactive-hover)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] font-semibold py-1.5 px-3 rounded-lg transition text-sm"
+                                    aria-label="Copy response" 
+                                    title={t.tooltips.copyResponse}>
                                     <CopyIcon /> {copied ? t.copied : t.copy}
                                 </button>
                             </div>
@@ -392,22 +399,22 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                                     value={editableResponse}
                                     onChange={(e) => setEditableResponse(e.target.value)}
                                     rows={10}
-                                    className="w-full bg-slate-900 border border-slate-600 rounded-lg p-4 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 transition resize-y text-base"
+                                    className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg p-4 text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] transition resize-y text-base"
                                 />
                                 <div className="flex justify-end gap-2 mt-2">
-                                    <button onClick={handleCancelEdit} className="bg-slate-600 hover:bg-slate-500 text-white font-semibold py-2 px-4 rounded-lg transition">{t.cancel}</button>
-                                    <button onClick={handleSaveEdit} className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 px-4 rounded-lg transition">{t.save}</button>
+                                    <button onClick={handleCancelEdit} className="bg-[var(--color-interactive)] hover:bg-[var(--color-interactive-hover)] text-[var(--color-text-primary)] font-semibold py-2 px-4 rounded-lg transition" title={t.tooltips.cancelChanges}>{t.cancel}</button>
+                                    <button onClick={handleSaveEdit} className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 px-4 rounded-lg transition" title={t.tooltips.saveChanges}>{t.save}</button>
                                 </div>
                             </div>
                         ) : (
                              <>
                                  <div 
-                                    className="prose prose-invert prose-p:text-slate-300 prose-headings:text-white prose-strong:text-white prose-a:text-cyan-400 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-violet-500 prose-li:marker:text-cyan-400 max-w-none"
+                                    className="prose-custom max-w-none"
                                     dangerouslySetInnerHTML={{ __html: generatedHtml }} 
                                  />
                                  {currentResponseHistoryItem?.searchResults && currentResponseHistoryItem.searchResults.length > 0 && (
-                                     <div className="mt-6 pt-4 border-t border-slate-700/50">
-                                         <h4 className="flex items-center gap-2 text-sm font-semibold text-slate-300 mb-3">
+                                     <div className="mt-6 pt-4 border-t border-[var(--color-border)]/50">
+                                         <h4 className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text-secondary)] mb-3">
                                              <WebIcon /> {t.searchResults}
                                          </h4>
                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
@@ -417,11 +424,11 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                                                      href={source.uri}
                                                      target="_blank"
                                                      rel="noopener noreferrer"
-                                                     className="bg-slate-700/50 hover:bg-slate-700/80 p-3 rounded-lg truncate transition-colors group"
+                                                     className="bg-[var(--color-interactive)]/50 hover:bg-[var(--color-interactive)]/80 p-3 rounded-lg truncate transition-colors group"
                                                      title={source.uri}
                                                  >
-                                                     <p className="font-semibold text-slate-200 group-hover:text-cyan-400 truncate">{source.title}</p>
-                                                     <p className="text-xs text-slate-400 truncate mt-1">{source.uri}</p>
+                                                     <p className="font-semibold text-[var(--color-text-primary)] group-hover:text-cyan-400 truncate">{source.title}</p>
+                                                     <p className="text-xs text-[var(--color-text-secondary)] truncate mt-1">{source.uri}</p>
                                                  </a>
                                              ))}
                                          </div>
@@ -436,9 +443,9 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
 
             {/* History Section */}
             {history.length > 0 && (
-                <div className="border-t border-slate-700 pt-6">
+                <div className="border-t border-[var(--color-border)] pt-6">
                     <div className="flex justify-between items-center mb-4">
-                        <button onClick={() => setIsHistoryVisible(!isHistoryVisible)} className="flex items-center gap-2 text-lg font-bold text-white w-full">
+                        <button onClick={() => setIsHistoryVisible(!isHistoryVisible)} className="flex items-center gap-2 text-lg font-bold text-[var(--color-text-primary)] w-full" title={t.tooltips.toggleHistory}>
                             <HistoryIcon />
                             {t.responseHistory}
                             <span className={`transform transition-transform ${isHistoryVisible ? 'rotate-180' : 'rotate-0'}`}>
@@ -446,7 +453,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                             </span>
                         </button>
                         {isHistoryVisible && (
-                            <button onClick={onClearHistory} className="flex-shrink-0 flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition">
+                            <button onClick={onClearHistory} className="flex-shrink-0 flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition" title={t.tooltips.clearHistory}>
                                 <TrashIcon />
                                 {t.clear}
                             </button>
@@ -455,26 +462,27 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                     {isHistoryVisible && (
                         <div className="space-y-6">
                             {historyHtml.map((item, index) => (
-                                <div key={item.id} className={`p-4 bg-slate-700/30 rounded-lg border border-slate-700/50 transition-all ${index === 0 ? 'border-violet-500/50 shadow-lg shadow-violet-500/5' : ''}`}>
-                                    <div className="flex justify-between items-center border-b border-slate-600/50 pb-3 mb-3">
-                                        <p className="text-sm font-semibold text-slate-300">{t.client}</p>
+                                <div key={item.id} className={`p-4 bg-[var(--color-interactive)]/30 rounded-lg border border-[var(--color-border)]/50 transition-all ${index === 0 ? 'border-violet-500/50 shadow-lg shadow-violet-500/5' : ''}`}>
+                                    <div className="flex justify-between items-center border-b border-[var(--color-border)]/50 pb-3 mb-3">
+                                        <p className="text-sm font-semibold text-[var(--color-text-secondary)]">{t.client}</p>
                                         <button 
                                             onClick={() => handleReply(item.clientMessage)} 
-                                            className="flex items-center gap-1.5 bg-slate-600/50 hover:bg-slate-600 text-slate-300 font-semibold py-1 px-2.5 rounded-md transition text-xs"
-                                            aria-label="Reply to this message">
+                                            className="flex items-center gap-1.5 bg-[var(--color-interactive)]/50 hover:bg-[var(--color-interactive)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] font-semibold py-1 px-2.5 rounded-md transition text-xs"
+                                            aria-label="Reply to this message"
+                                            title={t.tooltips.replyToMessage}>
                                             <ReplyIcon />
                                             {t.reply}
                                         </button>
                                     </div>
-                                    <p className="text-slate-300 whitespace-pre-wrap text-sm mb-4">{item.clientMessage}</p>
-                                    <p className="text-sm font-semibold text-white mb-3 border-b border-slate-600/50 pb-3">{t.you}</p>
+                                    <p className="text-[var(--color-text-secondary)] whitespace-pre-wrap text-sm mb-4">{item.clientMessage}</p>
+                                    <p className="text-sm font-semibold text-[var(--color-text-primary)] mb-3 border-b border-[var(--color-border)]/50 pb-3">{t.you}</p>
                                     <div 
-                                        className="prose prose-sm prose-invert prose-p:text-slate-300 prose-headings:text-white prose-strong:text-white prose-a:text-cyan-400 max-w-none"
+                                        className="prose-custom prose-sm max-w-none"
                                         dangerouslySetInnerHTML={{ __html: item.generatedResponseHtml }}
                                     />
                                     {item.searchResults && item.searchResults.length > 0 && (
-                                         <div className="mt-4 pt-4 border-t border-slate-700/50">
-                                             <h4 className="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-2">
+                                         <div className="mt-4 pt-4 border-t border-[var(--color-border)]/50">
+                                             <h4 className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-secondary)] mb-2">
                                                  <WebIcon /> {t.searchResults}
                                              </h4>
                                              <div className="grid grid-cols-1 gap-2 text-xs">
@@ -484,17 +492,17 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                                                          href={source.uri}
                                                          target="_blank"
                                                          rel="noopener noreferrer"
-                                                         className="bg-slate-600/40 hover:bg-slate-600/70 p-2 rounded-md truncate transition-colors group"
+                                                         className="bg-[var(--color-interactive)]/40 hover:bg-[var(--color-interactive)]/70 p-2 rounded-md truncate transition-colors group"
                                                          title={source.uri}
                                                      >
-                                                         <p className="font-medium text-slate-300 group-hover:text-cyan-400 truncate">{source.title}</p>
-                                                         <p className="text-slate-500 truncate">{source.uri}</p>
+                                                         <p className="font-medium text-[var(--color-text-secondary)] group-hover:text-cyan-400 truncate">{source.title}</p>
+                                                         <p className="text-[var(--color-text-placeholder)] truncate">{source.uri}</p>
                                                      </a>
                                                  ))}
                                              </div>
                                          </div>
                                      )}
-                                    <div className="mt-4 pt-4 border-t border-slate-600/50 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-400">
+                                    <div className="mt-4 pt-4 border-t border-[var(--color-border)]/50 flex flex-wrap gap-x-4 gap-y-2 text-xs text-[var(--color-text-secondary)]">
                                         <div className="flex items-center gap-1.5"><ModeIcon mode={item.generationMode} /><span>{item.generationMode}</span></div>
                                         <div className="flex items-center gap-1.5"><ToneIcon /><span>{item.tone}</span></div>
                                         <div className="flex items-center gap-1.5"><StyleIcon /><span>{item.responseStyle}</span></div>

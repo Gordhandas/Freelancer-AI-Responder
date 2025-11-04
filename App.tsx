@@ -130,6 +130,22 @@ const App: React.FC = () => {
     const [isAppInitialized, setIsAppInitialized] = useState(false);
     const [generationMode, setGenerationMode] = useState<GenerationMode>('Balanced');
     const [useSearch, setUseSearch] = useState<boolean>(false);
+    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+        const savedTheme = localStorage.getItem('app-theme');
+        if (savedTheme === 'light' || savedTheme === 'dark') {
+            return savedTheme;
+        }
+        return 'dark'; // Default to dark theme
+    });
+
+    useEffect(() => {
+        localStorage.setItem('app-theme', theme);
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    }, [theme]);
 
     useEffect(() => {
         const savedKey = localStorage.getItem('geminiApiKey');
@@ -350,7 +366,7 @@ const App: React.FC = () => {
     };
 
     if (!isAppInitialized) {
-        return <div className="min-h-screen bg-slate-950"></div>; // Loading state before we check for API key
+        return <div className="min-h-screen bg-[var(--color-background)]"></div>; // Loading state before we check for API key
     }
 
     if (!apiKey) {
@@ -358,12 +374,14 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className={`min-h-screen text-slate-200 transition-opacity duration-500 ${isAppVisible ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`min-h-screen text-[var(--color-text-primary)] transition-opacity duration-500 ${isAppVisible ? 'opacity-100' : 'opacity-0'}`}>
             <Header 
                 profile={profile}
                 onAddNewConversation={handleAddNewConversation}
                 isSidebarVisible={isSidebarVisible}
                 onToggleSidebar={() => setIsSidebarVisible(prev => !prev)}
+                theme={theme}
+                onToggleTheme={() => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'))}
             />
             <main className="p-4 sm:p-6 md:p-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-8xl mx-auto">
@@ -412,8 +430,8 @@ const App: React.FC = () => {
                                 onClearHistory={handleClearHistory}
                             />
                         ) : (
-                            <div className="bg-slate-800/40 p-6 rounded-2xl border border-slate-700 h-full flex items-center justify-center animate-fade-in">
-                                <p className="text-slate-400 text-lg">Select a conversation or create a new one to get started.</p>
+                            <div className="bg-[var(--color-surface-secondary)]/40 p-6 rounded-2xl border border-[var(--color-border)] h-full flex items-center justify-center animate-fade-in">
+                                <p className="text-[var(--color-text-secondary)] text-lg">Select a conversation or create a new one to get started.</p>
                             </div>
                         )}
                     </div>

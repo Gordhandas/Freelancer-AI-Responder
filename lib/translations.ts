@@ -20,6 +20,8 @@ type TranslationSet = {
     businessOwner: string;
     portfolioWebsite: string;
     portfolioWebsitePlaceholder: (role: UserRole) => string;
+    changeApiKey: string;
+
 
     // Role-specific labels and placeholders
     labels: (role: UserRole) => { skills: string; experience: string; };
@@ -57,9 +59,60 @@ type TranslationSet = {
     reply: string;
     you: string;
     searchResults: string;
+
+    // API Key Input
+    saveAndContinue: string;
     
     // Quick Prompts by Role
     promptLibrary: Record<UserRole, { title: string, prompt: string }[]>;
+
+    // Tooltips
+    tooltips: {
+        // Header
+        toggleSidebarShow: string;
+        toggleSidebarHide: string;
+        newConversation: string;
+        toggleLightMode: string;
+        toggleDarkMode: string;
+
+        // Profile Form
+        name: string;
+        role: string;
+        language: string;
+        skills: (role: UserRole) => string;
+        portfolio: (role: UserRole) => string;
+        experience: (role: UserRole) => string;
+        changeApiKey: string;
+
+        // Response Generator
+        clientMessage: string;
+        voiceInputStart: string;
+        voiceInputStop: string;
+        voiceInputNotSupported: string;
+        toggleWebSearch: string;
+        quickPrompt: (prompt: string) => string;
+        generationMode: string;
+        tone: string;
+        style: string;
+        generateResponse: string;
+        retry: string;
+        editResponse: string;
+        copyResponse: string;
+        saveChanges: string;
+        cancelChanges: string;
+        toggleHistory: string;
+        clearHistory: string;
+        replyToMessage: string;
+        
+        // Conversation List
+        selectConversation: string;
+        renameConversation: string;
+
+        // API Key Input
+        apiKey: string;
+        saveApiKey: string;
+        getApiKey: string;
+    }
 };
 
 export const translations: Record<Language, TranslationSet> = {
@@ -86,6 +139,7 @@ export const translations: Record<Language, TranslationSet> = {
                 default: return 'e.g., https://your-portfolio.com';
             }
         },
+        changeApiKey: 'Change API Key',
         labels: (role) => {
             switch(role) {
                 case 'Student': return { skills: 'Areas of Study / Key Skills', experience: 'Projects & Coursework Summary' };
@@ -129,6 +183,7 @@ export const translations: Record<Language, TranslationSet> = {
         reply: 'Reply',
         you: 'You:',
         searchResults: 'Sources',
+        saveAndContinue: 'Save and Continue',
         promptLibrary: {
             'Freelancer': [
                 { title: "Project Inquiry", prompt: "A potential client is asking about my availability and rates for a new web development project." },
@@ -145,6 +200,43 @@ export const translations: Record<Language, TranslationSet> = {
                 { title: "Partnership Proposal", prompt: "I'm reaching out to a potential partner to propose a collaboration." },
                 { title: "Marketing Email", prompt: "Draft a marketing email announcing our new seasonal product line to our subscribers." },
             ]
+        },
+        tooltips: {
+            toggleSidebarShow: 'Show conversations sidebar',
+            toggleSidebarHide: 'Hide conversations sidebar',
+            newConversation: 'Start a new, empty conversation',
+            toggleLightMode: 'Switch to light mode',
+            toggleDarkMode: 'Switch to dark mode',
+            name: 'Enter your full name as you want it to appear in responses.',
+            role: 'Select the role that best describes you to tailor the AI\'s persona.',
+            language: 'Choose the language for the application interface and AI responses.',
+            skills: (role: UserRole) => `List your key skills or areas of study, separated by commas. This helps the AI understand your expertise as a ${role}.`,
+            portfolio: (role: UserRole) => `Enter the full URL to your portfolio, website, or profile page. The AI can share this link if relevant.`,
+            experience: (role: UserRole) => `Provide a brief summary of your experience. This will be used by the AI to introduce you as a ${role}.`,
+            changeApiKey: 'Forget the current API key and enter a new one.',
+            clientMessage: 'Enter or paste the full message you received.',
+            voiceInputStart: 'Start voice input (requires microphone permission)',
+            voiceInputStop: 'Stop listening',
+            voiceInputNotSupported: 'Your browser does not support speech recognition.',
+            toggleWebSearch: 'Toggle web search. When enabled, the AI can search Google for up-to-date information and will cite its sources.',
+            quickPrompt: (prompt: string) => `Use this prompt: "${prompt}"`,
+            generationMode: 'Choose the AI model. "Fast" is quickest, "Balanced" is a mix of speed and quality, and "Thinking" is for complex reasoning.',
+            tone: 'Select the overall tone for the AI-generated response.',
+            style: 'Select the desired length and level of detail for the response.',
+            generateResponse: 'Generate a response based on the client message, your profile, and selected options.',
+            retry: 'Try generating the response again. This can be useful if there was a temporary network error.',
+            editResponse: 'Manually edit the generated response before copying.',
+            copyResponse: 'Copy the final response to your clipboard.',
+            saveChanges: 'Save your edits to the response.',
+            cancelChanges: 'Discard your edits and revert to the original AI-generated response.',
+            toggleHistory: 'Show or hide the previous messages in this conversation.',
+            clearHistory: 'Permanently delete all messages in this conversation.',
+            replyToMessage: 'Use this client message again as the input for a new response.',
+            selectConversation: 'Click to view this conversation.',
+            renameConversation: 'Double-click to rename this conversation.',
+            apiKey: 'Enter your Google Gemini API key. It is stored securely in your browser.',
+            saveApiKey: 'Save the key and start using the application.',
+            getApiKey: 'Go to Google AI Studio to get a free API key.',
         }
     },
     'Spanish': {
@@ -170,6 +262,7 @@ export const translations: Record<Language, TranslationSet> = {
                 default: return 'p.ej., https://tu-portafolio.com';
             }
         },
+        changeApiKey: 'Cambiar Clave de API',
         labels: (role) => {
             switch(role) {
                 case 'Student': return { skills: 'Áreas de Estudio / Habilidades Clave', experience: 'Resumen de Proyectos y Cursos' };
@@ -213,6 +306,7 @@ export const translations: Record<Language, TranslationSet> = {
         reply: 'Responder',
         you: 'Tú:',
         searchResults: 'Fuentes',
+        saveAndContinue: 'Guardar y Continuar',
         promptLibrary: {
             'Freelancer': [
                 { title: "Consulta de Proyecto", prompt: "Un cliente potencial pregunta sobre mi disponibilidad y tarifas para un nuevo proyecto de desarrollo web." },
@@ -229,6 +323,43 @@ export const translations: Record<Language, TranslationSet> = {
                 { title: "Propuesta de Asociación", prompt: "Me estoy comunicando con un socio potencial para proponer una colaboración." },
                 { title: "Email de Marketing", prompt: "Redactar un email de marketing anunciando nuestra nueva línea de productos de temporada a nuestros suscriptores." },
             ]
+        },
+        tooltips: {
+            toggleSidebarShow: 'Mostrar barra lateral de conversaciones',
+            toggleSidebarHide: 'Ocultar barra lateral de conversaciones',
+            newConversation: 'Comenzar una nueva conversación vacía',
+            toggleLightMode: 'Cambiar a modo claro',
+            toggleDarkMode: 'Cambiar a modo oscuro',
+            name: 'Ingresa tu nombre completo como quieres que aparezca en las respuestas.',
+            role: 'Selecciona el rol que mejor te describa para personalizar la personalidad de la IA.',
+            language: 'Elige el idioma para la interfaz de la aplicación y las respuestas de la IA.',
+            skills: (role: UserRole) => `Enumera tus habilidades clave o áreas de estudio, separadas por comas. Esto ayuda a la IA a entender tu experiencia como ${role}.`,
+            portfolio: (role: UserRole) => `Ingresa la URL completa de tu portafolio, sitio web o página de perfil. La IA puede compartir este enlace si es relevante.`,
+            experience: (role: UserRole) => `Proporciona un breve resumen de tu experiencia. Esto será utilizado por la IA para presentarte como ${role}.`,
+            changeApiKey: 'Olvidar la clave de API actual e ingresar una nueva.',
+            clientMessage: 'Ingresa o pega el mensaje completo que recibiste.',
+            voiceInputStart: 'Iniciar entrada de voz (requiere permiso de micrófono)',
+            voiceInputStop: 'Dejar de escuchar',
+            voiceInputNotSupported: 'Tu navegador no admite el reconocimiento de voz.',
+            toggleWebSearch: 'Activar/desactivar búsqueda web. Cuando está activado, la IA puede buscar en Google información actualizada y citará sus fuentes.',
+            quickPrompt: (prompt: string) => `Usar esta plantilla: "${prompt}"`,
+            generationMode: 'Elige el modelo de IA. "Rápido" es el más veloz, "Equilibrado" es una mezcla de velocidad y calidad, y "Pensamiento" es para razonamientos complejos.',
+            tone: 'Selecciona el tono general para la respuesta generada por la IA.',
+            style: 'Selecciona la longitud y el nivel de detalle deseados para la respuesta.',
+            generateResponse: 'Generar una respuesta basada en el mensaje del cliente, tu perfil y las opciones seleccionadas.',
+            retry: 'Intentar generar la respuesta de nuevo. Esto puede ser útil si hubo un error de red temporal.',
+            editResponse: 'Editar manualmente la respuesta generada antes de copiar.',
+            copyResponse: 'Copiar la respuesta final a tu portapapeles.',
+            saveChanges: 'Guardar tus ediciones en la respuesta.',
+            cancelChanges: 'Descartar tus ediciones y volver a la respuesta original generada por la IA.',
+            toggleHistory: 'Mostrar u ocultar los mensajes anteriores en esta conversación.',
+            clearHistory: 'Eliminar permanentemente todos los mensajes en esta conversación.',
+            replyToMessage: 'Usar este mensaje del cliente de nuevo como entrada para una nueva respuesta.',
+            selectConversation: 'Haz clic para ver esta conversación.',
+            renameConversation: 'Doble clic para renombrar esta conversación.',
+            apiKey: 'Ingresa tu clave de API de Google Gemini. Se almacena de forma segura en tu navegador.',
+            saveApiKey: 'Guardar la clave y comenzar a usar la aplicación.',
+            getApiKey: 'Ve a Google AI Studio para obtener una clave de API gratuita.',
         }
     },
     'French': {
@@ -254,6 +385,7 @@ export const translations: Record<Language, TranslationSet> = {
                 default: return 'ex: https://votre-portfolio.com';
             }
         },
+        changeApiKey: 'Changer la clé API',
         labels: (role) => {
             switch(role) {
                 case 'Student': return { skills: 'Domaines d\'Études / Compétences Clés', experience: 'Résumé des Projets et Cours' };
@@ -297,6 +429,7 @@ export const translations: Record<Language, TranslationSet> = {
         reply: 'Répondre',
         you: 'Vous :',
         searchResults: 'Sources',
+        saveAndContinue: 'Enregistrer et Continuer',
         promptLibrary: {
             'Freelancer': [
                 { title: "Demande de Projet", prompt: "Un client potentiel s'interroge sur ma disponibilité et mes tarifs pour un nouveau projet de développement web." },
@@ -313,6 +446,43 @@ export const translations: Record<Language, TranslationSet> = {
                 { title: "Proposition de Partenariat", prompt: "Je contacte un partenaire potentiel pour proposer une collaboration." },
                 { title: "Email Marketing", prompt: "Rédiger un email marketing annonçant notre nouvelle gamme de produits saisonniers à nos abonnés." },
             ]
+        },
+        tooltips: {
+            toggleSidebarShow: 'Afficher la barre latérale des conversations',
+            toggleSidebarHide: 'Masquer la barre latérale des conversations',
+            newConversation: 'Démarrer une nouvelle conversation vide',
+            toggleLightMode: 'Passer en mode clair',
+            toggleDarkMode: 'Passer en mode sombre',
+            name: 'Entrez votre nom complet tel que vous souhaitez qu\'il apparaisse dans les réponses.',
+            role: 'Sélectionnez le rôle qui vous décrit le mieux pour adapter la personnalité de l\'IA.',
+            language: 'Choisissez la langue pour l\'interface de l\'application et les réponses de l\'IA.',
+            skills: (role: UserRole) => `Énumérez vos compétences clés ou domaines d'études, séparés par des virgules. Cela aide l'IA à comprendre votre expertise en tant que ${role}.`,
+            portfolio: (role: UserRole) => `Entrez l'URL complète de votre portfolio, site web ou page de profil. L'IA peut partager ce lien si pertinent.`,
+            experience: (role: UserRole) => `Fournissez un bref résumé de votre expérience. Il sera utilisé par l'IA pour vous présenter en tant que ${role}.`,
+            changeApiKey: 'Oublier la clé API actuelle et en saisir une nouvelle.',
+            clientMessage: 'Saisissez ou collez le message complet que vous avez reçu.',
+            voiceInputStart: 'Démarrer la saisie vocale (nécessite l\'autorisation du microphone)',
+            voiceInputStop: 'Arrêter l\'écoute',
+            voiceInputNotSupported: 'Votre navigateur ne prend pas en charge la reconnaissance vocale.',
+            toggleWebSearch: 'Activer/Désactiver la recherche web. Lorsque cette option est activée, l\'IA peut rechercher des informations à jour sur Google et citera ses sources.',
+            quickPrompt: (prompt: string) => `Utiliser cette suggestion : "${prompt}"`,
+            generationMode: 'Choisissez le modèle d\'IA. "Rapide" est le plus vif, "Équilibré" est un mélange de vitesse et de qualité, et "Réflexion" est pour les raisonnements complexes.',
+            tone: 'Sélectionnez le ton général pour la réponse générée par l\'IA.',
+            style: 'Sélectionnez la longueur et le niveau de détail souhaités pour la réponse.',
+            generateResponse: 'Générer une réponse basée sur le message du client, votre profil et les options sélectionnées.',
+            retry: 'Tenter de générer à nouveau la réponse. Utile en cas d\'erreur réseau temporaire.',
+            editResponse: 'Modifier manuellement la réponse générée avant de la copier.',
+            copyResponse: 'Copier la réponse finale dans votre presse-papiers.',
+            saveChanges: 'Enregistrer vos modifications de la réponse.',
+            cancelChanges: 'Annuler vos modifications et revenir à la réponse originale générée par l\'IA.',
+            toggleHistory: 'Afficher ou masquer les messages précédents dans cette conversation.',
+            clearHistory: 'Supprimer définitivement tous les messages de cette conversation.',
+            replyToMessage: 'Utiliser à nouveau ce message client comme entrée pour une nouvelle réponse.',
+            selectConversation: 'Cliquez pour afficher cette conversation.',
+            renameConversation: 'Double-cliquez pour renommer cette conversation.',
+            apiKey: 'Entrez votre clé API Google Gemini. Elle est stockée en toute sécurité dans votre navigateur.',
+            saveApiKey: 'Enregistrer la clé et commencer à utiliser l\'application.',
+            getApiKey: 'Allez sur Google AI Studio pour obtenir une clé API gratuite.',
         }
     },
     'Japanese': {
@@ -338,6 +508,7 @@ export const translations: Record<Language, TranslationSet> = {
                 default: return '例：https://あなたのポートフォリオ.com';
             }
         },
+        changeApiKey: 'APIキーの変更',
         labels: (role) => {
             switch(role) {
                 case 'Student': return { skills: '研究分野/主要スキル', experience: 'プロジェクト＆課題の概要' };
@@ -381,6 +552,7 @@ export const translations: Record<Language, TranslationSet> = {
         reply: '返信',
         you: 'あなた:',
         searchResults: 'ソース',
+        saveAndContinue: '保存して続行',
         promptLibrary: {
             'Freelancer': [
                 { title: "プロジェクトの問い合わせ", prompt: "潜在的なクライアントから、新しいウェブ開発プロジェクトの空き状況と料金について問い合わせがありました。" },
@@ -397,6 +569,43 @@ export const translations: Record<Language, TranslationSet> = {
                 { title: "提携提案", prompt: "協力関係を提案するために、潜在的なパートナーに連絡を取っています。" },
                 { title: "マーケティングメール", prompt: "新しい季節限定商品ラインを購読者に知らせるマーケティングメールを作成します。" },
             ]
+        },
+        tooltips: {
+            toggleSidebarShow: '会話サイドバーを表示',
+            toggleSidebarHide: '会話サイドバーを非表示',
+            newConversation: '新しい空の会話を開始',
+            toggleLightMode: 'ライトモードに切り替え',
+            toggleDarkMode: 'ダークモードに切り替え',
+            name: '応答に表示させたいフルネームを入力してください。',
+            role: 'AIのペルソナを調整するために、あなたを最もよく表す役割を選択してください。',
+            language: 'アプリケーションのインターフェースとAIの応答の言語を選択してください。',
+            skills: (role: UserRole) => `主要なスキルや研究分野をカンマで区切ってリストアップしてください。これにより、AIが${role}としてのあなたの専門知識を理解するのに役立ちます。`,
+            portfolio: (role: UserRole) => `ポートフォリオ、ウェブサイト、またはプロフィールページの完全なURLを入力してください。AIは関連する場合にこのリンクを共有できます。`,
+            experience: (role: UserRole) => `あなたの経験の簡単な要約を提供してください。これは、AIが${role}としてあなたを紹介するために使用されます。`,
+            changeApiKey: '現在のAPIキーを忘れて新しいものを入力します。',
+            clientMessage: '受信した完全なメッセージを入力または貼り付けてください。',
+            voiceInputStart: '音声入力を開始（マイクの許可が必要です）',
+            voiceInputStop: '聞き取りを停止',
+            voiceInputNotSupported: 'お使いのブラウザは音声認識をサポートしていません。',
+            toggleWebSearch: 'ウェブ検索を切り替えます。有効にすると、AIはGoogleで最新情報を検索し、その情報源を引用します。',
+            quickPrompt: (prompt: string) => `このプロンプトを使用する: "${prompt}"`,
+            generationMode: 'AIモデルを選択してください。「高速」は最も速く、「バランス」は速度と品質のバランスが取れており、「思考」は複雑な推論用です。',
+            tone: 'AIが生成する応答の全体的なトーンを選択してください。',
+            style: '応答の希望する長さと詳細レベルを選択してください。',
+            generateResponse: 'クライアントのメッセージ、あなたのプロフィール、選択したオプションに基づいて応答を生成します。',
+            retry: '応答の生成を再試行します。一時的なネットワークエラーがあった場合に便利です。',
+            editResponse: 'コピーする前に生成された応答を手動で編集します。',
+            copyResponse: '最終的な応答をクリップボードにコピーします。',
+            saveChanges: '応答への編集を保存します。',
+            cancelChanges: '編集を破棄し、元のAI生成の応答に戻します。',
+            toggleHistory: 'この会話の以前のメッセージを表示または非表示にします。',
+            clearHistory: 'この会話のすべてのメッセージを完全に削除します。',
+            replyToMessage: '新しい応答の入力としてこのクライアントメッセージを再度使用します。',
+            selectConversation: 'クリックしてこの会話を表示します。',
+            renameConversation: 'ダブルクリックしてこの会話の名前を変更します。',
+            apiKey: 'Google Gemini APIキーを入力してください。ブラウザに安全に保存されます。',
+            saveApiKey: 'キーを保存してアプリケーションの使用を開始します。',
+            getApiKey: 'Google AI Studioにアクセスして無料のAPIキーを取得します。',
         }
     }
 };

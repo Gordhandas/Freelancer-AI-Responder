@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
@@ -14,13 +14,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --slate-950: #020617;
-            --slate-900: #0f172a;
-            --slate-800: #1e293b;
-            --slate-700: #334155;
-            --slate-600: #475569;
-            --slate-400: #94a3b8;
-            --slate-200: #e2e8f0;
+            /* Light Theme Colors */
+            --color-background: #f8fafc; /* slate-50 */
+            --color-background-gradient-start: #e2e8f0; /* slate-200 */
+            --color-surface: #ffffff; /* white */
+            --color-surface-secondary: #f1f5f9; /* slate-100 */
+            --color-surface-tertiary: #e2e8f0; /* slate-200 */
+            --color-interactive: #e2e8f0; /* slate-200 */
+            --color-interactive-hover: #cbd5e1; /* slate-300 */
+            --color-text-primary: #0f172a; /* slate-900 */
+            --color-text-secondary: #334155; /* slate-700 */
+            --color-text-placeholder: #64748b; /* slate-500 */
+            --color-border: #cbd5e1; /* slate-300 */
+            --color-border-focus: #8b5cf6; /* violet-500 */
+            --color-prose-blockquote-border: #8b5cf6;
+            --color-prose-link: #0ea5e9;
+            --color-prose-marker: #06b6d4;
+            --color-prose-code-bg: #e2e8f0;
+            --color-prose-code-text: #1e293b;
+
+            /* Shared Colors */
             --cyan-500: #06b6d4;
             --cyan-400: #22d3ee;
             --sky-500: #0ea5e9;
@@ -29,11 +42,33 @@
             --red-500: #ef4444;
         }
 
+        html.dark {
+            /* Dark Theme Colors */
+            --color-background: #020617; /* slate-950 */
+            --color-background-gradient-start: #1e293b; /* slate-800 */
+            --color-surface: #0f172a; /* slate-900 */
+            --color-surface-secondary: #1e293b; /* slate-800 */
+            --color-surface-tertiary: #334155; /* slate-700 */
+            --color-interactive: #334155; /* slate-700 */
+            --color-interactive-hover: #475569; /* slate-600 */
+            --color-text-primary: #e2e8f0; /* slate-200 */
+            --color-text-secondary: #94a3b8; /* slate-400 */
+            --color-text-placeholder: #475569; /* slate-600 */
+            --color-border: #334155; /* slate-700 */
+            --color-border-focus: #8b5cf6; /* violet-500 */
+            --color-prose-blockquote-border: #8b5cf6;
+            --color-prose-link: #22d3ee;
+            --color-prose-marker: #22d3ee;
+            --color-prose-code-bg: #020617;
+            --color-prose-code-text: #e2e8f0;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--slate-950);
-            background-image: radial-gradient(circle at top left, var(--slate-800) 0%, var(--slate-950) 30%);
-            color: var(--slate-200);
+            background-color: var(--color-background);
+            background-image: radial-gradient(circle at top left, var(--color-background-gradient-start) 0%, var(--color-background) 30%);
+            color: var(--color-text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Custom Scrollbar */
@@ -44,29 +79,47 @@
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: var(--slate-700);
+            background: var(--color-interactive);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--slate-600);
+            background: var(--color-interactive-hover);
         }
         
-        /* Custom styles for highlighted code blocks */
-        .prose pre {
-            background-color: var(--slate-950);
-            color: var(--slate-200);
+        /* Custom styles for prose content */
+        .prose-custom {
+            color: var(--color-text-secondary);
+        }
+        .prose-custom h1, .prose-custom h2, .prose-custom h3, .prose-custom h4, .prose-custom strong {
+            color: var(--color-text-primary);
+        }
+        .prose-custom a {
+            color: var(--color-prose-link);
+            text-decoration: none;
+        }
+        .prose-custom a:hover {
+            text-decoration: underline;
+        }
+        .prose-custom blockquote {
+            padding-left: 1em;
+            border-left: 0.25em solid var(--color-prose-blockquote-border);
+            color: var(--color-text-secondary);
+        }
+        .prose-custom li::marker {
+            color: var(--color-prose-marker);
+        }
+        .prose-custom pre {
+            background-color: var(--color-prose-code-bg);
+            color: var(--color-prose-code-text);
             padding: 1.25em;
             border-radius: 0.75rem;
-            border: 1px solid var(--slate-700);
+            border: 1px solid var(--color-border);
             overflow-x: auto;
             font-size: 0.9em;
         }
-        .prose pre code.hljs {
+        .prose-custom pre code.hljs {
             background: transparent;
             padding: 0;
-        }
-        .prose-blockquote {
-             border-left-color: var(--violet-500) !important;
         }
 
         /* Animations */
@@ -92,7 +145,7 @@
         }
         .shimmer {
             animation: shimmer 2s infinite linear;
-            background: linear-gradient(to right, var(--slate-800) 4%, var(--slate-700) 25%, var(--slate-800) 36%);
+            background: linear-gradient(to right, var(--color-surface-tertiary) 4%, var(--color-interactive) 25%, var(--color-surface-tertiary) 36%);
             background-size: 1000px 100%;
         }
 

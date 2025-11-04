@@ -46,8 +46,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
     };
 
     return (
-        <div className="bg-slate-800/40 p-6 rounded-2xl shadow-lg border border-slate-700">
-            <h2 className="text-xl font-bold text-white flex items-center gap-3 mb-4">
+        <div className="bg-[var(--color-surface-secondary)]/60 p-6 rounded-2xl shadow-lg border border-[var(--color-border)]">
+            <h2 className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-3 mb-4">
                 <ChatBubbleIcon />
                 {t.conversations}
             </h2>
@@ -58,9 +58,10 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                         onClick={() => onSelectConversation(convo.id)}
                         className={`relative w-full text-left p-3 rounded-lg transition-all duration-200 overflow-hidden ${
                             convo.id === activeConversationId
-                                ? 'bg-slate-700/50 text-white'
-                                : 'hover:bg-slate-700/30 text-slate-300'
+                                ? 'bg-[var(--color-interactive)]/50 text-[var(--color-text-primary)]'
+                                : 'hover:bg-[var(--color-interactive)]/30 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
                         }`}
+                        title={t.tooltips.selectConversation}
                     >
                         {convo.id === activeConversationId && (
                             <span className="absolute left-0 top-0 h-full w-1 bg-violet-500 rounded-r-full"></span>
@@ -74,7 +75,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                                 onKeyDown={handleKeyDown}
                                 onClick={(e) => e.stopPropagation()}
                                 autoFocus
-                                className="w-full bg-slate-600 text-white p-1 rounded border-none font-medium truncate focus:ring-1 focus:ring-violet-500"
+                                className="w-full bg-[var(--color-interactive-hover)] text-[var(--color-text-primary)] p-1 rounded border-none font-medium truncate focus:ring-1 focus:ring-violet-500"
                             />
                         ) : (
                             <p 
@@ -83,11 +84,12 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                                     e.stopPropagation();
                                     handleStartEditing(convo.id, convo.name);
                                 }}
+                                title={t.tooltips.renameConversation}
                             >
                                 {convo.name}
                             </p>
                         )}
-                        <p className="text-xs text-slate-400 truncate mt-1">
+                        <p className="text-xs text-[var(--color-text-secondary)] truncate mt-1">
                             {convo.history.length > 0 ? convo.history[0].clientMessage : t.noMessagesYet}
                         </p>
                     </button>
