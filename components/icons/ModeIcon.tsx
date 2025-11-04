@@ -1,10 +1,10 @@
 import React from 'react';
-import { GenerationMode } from '../../types';
+import { ModelId } from '../../types';
 import { SparklesIcon } from './SparklesIcon';
 import { BoltIcon } from './BoltIcon';
 
 interface ModeIconProps {
-    mode: GenerationMode;
+    modelId: ModelId;
 }
 
 const BrainIcon: React.FC = () => (
@@ -14,13 +14,13 @@ const BrainIcon: React.FC = () => (
     </svg>
 )
 
-export const ModeIcon: React.FC<ModeIconProps> = ({ mode }) => {
-    switch(mode) {
-        case 'Thinking':
+export const ModeIcon: React.FC<ModeIconProps> = ({ modelId }) => {
+    switch(modelId) {
+        case 'gemini-2.5-pro':
             return <BrainIcon />;
-        case 'Fast':
+        case 'gemini-flash-lite-latest':
             return <BoltIcon />;
-        case 'Balanced':
+        case 'gemini-2.5-flash':
         default:
             return (
                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

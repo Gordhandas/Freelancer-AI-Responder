@@ -1,14 +1,21 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Conversation, ProfileData } from '../types';
 import { translations } from '../lib/translations';
 import { ChatBubbleIcon } from './icons/ChatBubbleIcon';
+import { UploadIcon } from './icons/UploadIcon';
+import { DownloadIcon } from './icons/DownloadIcon';
+import { ShareIcon } from './icons/ShareIcon';
+import { CheckIcon } from './icons/CheckIcon';
 
 interface ConversationListProps {
     conversations: Conversation[];
     activeConversationId: number;
     onSelectConversation: (id: number) => void;
     onRenameConversation: (id: number, newName: string) => void;
+    onImportConversations: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onExportConversations: () => void;
+    onShareConversation: () => void;
     profile: ProfileData;
 }
 
@@ -17,10 +24,15 @@ export const ConversationList: React.FC<ConversationListProps> = ({
     activeConversationId,
     onSelectConversation,
     onRenameConversation,
+    onImportConversations,
+    onExportConversations,
+    onShareConversation,
     profile
 }) => {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editingName, setEditingName] = useState<string>('');
+    const [linkCopied, setLinkCopied] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const t = translations[profile.language];
 
     const handleStartEditing = (id: number, name: string) => {
@@ -45,12 +57,55 @@ export const ConversationList: React.FC<ConversationListProps> = ({
         }
     };
 
+    const handleShareClick = () => {
+        onShareConversation();
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2500);
+    };
+
+
     return (
         <div className="bg-[var(--color-surface-secondary)]/60 p-6 rounded-2xl shadow-lg border border-[var(--color-border)]">
-            <h2 className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-3 mb-4">
-                <ChatBubbleIcon />
-                {t.conversations}
-            </h2>
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={onImportConversations}
+                accept=".json"
+                className="hidden"
+                aria-hidden="true"
+            />
+            <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-3">
+                    <ChatBubbleIcon />
+                    {t.conversations}
+                </h2>
+                <div className="flex items-center gap-1 text-[var(--color-text-secondary)]">
+                    <button
+                        onClick={handleShareClick}
+                        title={linkCopied ? t.linkCopied : t.tooltips.shareConversation}
+                        className="p-2 rounded-lg hover:bg-[var(--color-interactive)] hover:text-[var(--color-text-primary)] transition-colors"
+                        aria-label={t.share}
+                    >
+                        {linkCopied ? <CheckIcon /> : <ShareIcon />}
+                    </button>
+                    <button 
+                        onClick={() => fileInputRef.current?.click()} 
+                        title={t.tooltips.importConversations} 
+                        className="p-2 rounded-lg hover:bg-[var(--color-interactive)] hover:text-[var(--color-text-primary)] transition-colors"
+                        aria-label={t.importConversations}
+                    >
+                        <UploadIcon />
+                    </button>
+                    <button 
+                        onClick={onExportConversations} 
+                        title={t.tooltips.exportConversations} 
+                        className="p-2 rounded-lg hover:bg-[var(--color-interactive)] hover:text-[var(--color-text-primary)] transition-colors"
+                        aria-label={t.exportConversations}
+                    >
+                        <DownloadIcon />
+                    </button>
+                </div>
+            </div>
             <div className="space-y-2 max-h-[40vh] overflow-y-auto pr-2">
                 {conversations.map(convo => (
                     <button

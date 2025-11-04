@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { CopyIcon } from './icons/CopyIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { MessageIcon } from './icons/MessageIcon';
-import { HistoryItem, Tone, ResponseStyle, ProfileData, GenerationMode } from '../types';
-import { translations } from '../lib/translations';
+import { HistoryItem, Tone, ResponseStyle, ProfileData, ModelId } from '../types';
+import { translations, TranslationSet } from '../lib/translations';
 import { HistoryIcon } from './icons/HistoryIcon';
 import { TrashIcon } from './icons/TrashIcon';
 import { ChevronDownIcon } from './icons/ChevronDownIcon';
@@ -17,6 +18,8 @@ import { MicrophoneIcon } from './icons/MicrophoneIcon';
 import { ModeIcon } from './icons/ModeIcon';
 import { WebIcon } from './icons/WebIcon';
 import { LoadingIndicator } from './LoadingIndicator';
+import { ErrorIcon } from './icons/ErrorIcon';
+import { ClipboardListIcon } from './icons/ClipboardListIcon';
 
 
 interface ResponseGeneratorProps {
@@ -30,8 +33,8 @@ interface ResponseGeneratorProps {
     setTone: (tone: Tone) => void;
     responseStyle: ResponseStyle;
     setResponseStyle: (style: ResponseStyle) => void;
-    generationMode: GenerationMode;
-    setGenerationMode: (mode: GenerationMode) => void;
+    modelId: ModelId;
+    setModelId: (mode: ModelId) => void;
     useSearch: boolean;
     setUseSearch: (use: boolean) => void;
     history: HistoryItem[];
@@ -51,6 +54,15 @@ declare global {
     }
 }
 
+const modelToDisplayName = (modelId: ModelId, t: TranslationSet) => {
+    switch (modelId) {
+        case 'gemini-flash-lite-latest': return t.models.flashLite.name;
+        case 'gemini-2.5-flash': return t.models.flash.name;
+        case 'gemini-2.5-pro': return t.models.pro.name;
+        default: return modelId;
+    }
+};
+
 export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
     clientMessage,
     setClientMessage,
@@ -62,8 +74,8 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
     setTone,
     responseStyle,
     setResponseStyle,
-    generationMode,
-    setGenerationMode,
+    modelId,
+    setModelId,
     useSearch,
     setUseSearch,
     history,
@@ -71,6 +83,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
     profile,
 }) => {
     const [copied, setCopied] = useState(false);
+    const [conversationCopied, setConversationCopied] = useState(false);
     const [isHistoryVisible, setIsHistoryVisible] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [editableResponse, setEditableResponse] = useState(response);
@@ -91,6 +104,15 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
              setTimeout(() => responseContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
         }
     }, [response, isLoading]);
+
+    // Auto-resize textarea
+    useEffect(() => {
+        const textarea = clientMessageRef.current;
+        if (textarea) {
+            textarea.style.height = 'auto'; // Reset height to recalculate
+            textarea.style.height = `${textarea.scrollHeight}px`; // Set height to content height
+        }
+    }, [clientMessage]);
     
     // Setup Speech Recognition
     useEffect(() => {
@@ -169,6 +191,16 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
+
+    const handleCopyConversation = () => {
+        const formatted = history.slice().reverse().map(item => {
+            return `Client:\n${item.clientMessage}\n\nYou (${profile.name}):\n${item.generatedResponse}`;
+        }).join('\n\n---\n\n');
+    
+        navigator.clipboard.writeText(formatted);
+        setConversationCopied(true);
+        setTimeout(() => setConversationCopied(false), 2000);
+    };
     
     const handleReply = (message: string) => {
         setClientMessage(message);
@@ -208,6 +240,19 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
         clientMessageRef.current?.focus();
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!isLoading) {
+                onGenerate();
+            }
+        }
+    };
+
+    const modelDescription = useMemo(() => {
+        return t.models[modelId.includes('pro') ? 'pro' : (modelId.includes('lite') ? 'flashLite' : 'flash')].description;
+    }, [modelId, t]);
+
 
     return (
         <div className="bg-[var(--color-surface-secondary)]/60 p-6 rounded-2xl shadow-lg border border-[var(--color-border)] flex flex-col gap-6 animate-slide-in-up" style={{ animationDelay: '400ms' }}>
@@ -224,9 +269,10 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                         ref={clientMessageRef}
                         value={clientMessage}
                         onChange={(e) => setClientMessage(e.target.value)}
+                        onKeyDown={handleKeyDown}
                         placeholder={t.clientMessagePlaceholder}
-                        rows={8}
-                        className="w-full bg-[var(--color-surface)]/50 border border-[var(--color-border)] rounded-lg p-4 pr-12 pb-12 text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] transition resize-y text-base placeholder:text-[var(--color-text-placeholder)]"
+                        rows={3}
+                        className="w-full bg-[var(--color-surface)]/50 border border-[var(--color-border)] rounded-lg p-4 pr-12 pb-12 text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] transition text-base placeholder:text-[var(--color-text-placeholder)] max-h-64 overflow-y-auto"
                         title={t.tooltips.clientMessage}
                     />
                      <button
@@ -279,18 +325,19 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
             {/* Generation Controls */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                  <div>
-                    <label htmlFor="mode" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">{t.mode}</label>
+                    <label htmlFor="model" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">{t.model}</label>
                     <select
-                        id="mode"
-                        value={generationMode}
-                        onChange={(e) => setGenerationMode(e.target.value as GenerationMode)}
+                        id="model"
+                        value={modelId}
+                        onChange={(e) => setModelId(e.target.value as ModelId)}
                         className="w-full bg-[var(--color-surface-tertiary)] border border-[var(--color-border)] rounded-md p-2.5 text-[var(--color-text-primary)] focus:ring-2 focus:ring-[var(--color-border-focus)] focus:border-[var(--color-border-focus)] transition"
-                        title={t.tooltips.generationMode}
+                        title={t.tooltips.model}
                     >
-                        <option value="Fast">{t.fast}</option>
-                        <option value="Balanced">{t.balanced}</option>
-                        <option value="Thinking">{t.thinking}</option>
+                        <option value="gemini-flash-lite-latest">{t.models.flashLite.name}</option>
+                        <option value="gemini-2.5-flash">{t.models.flash.name}</option>
+                        <option value="gemini-2.5-pro">{t.models.pro.name}</option>
                     </select>
+                    <p className="text-xs text-[var(--color-text-secondary)] mt-2 h-8">{modelDescription}</p>
                 </div>
                 {[
                     { label: t.tone, value: tone, setter: setTone, options: ['Casual', 'Formal', 'Enthusiastic'] },
@@ -359,7 +406,12 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
             </div>
 
             {/* Error Message */}
-            {error && <div className="bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm break-words"><pre className="whitespace-pre-wrap font-sans">{error}</pre></div>}
+            {error && (
+                <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm break-words animate-fade-in">
+                    <ErrorIcon className="h-5 w-5 flex-shrink-0 mt-0.5 text-red-400" />
+                    <pre className="whitespace-pre-wrap font-sans">{error}</pre>
+                </div>
+            )}
 
             {/* Generated Response */}
             <div ref={responseContainerRef} className="scroll-mt-8">
@@ -450,10 +502,16 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                             </span>
                         </button>
                         {isHistoryVisible && (
-                            <button onClick={onClearHistory} className="flex-shrink-0 flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition" title={t.tooltips.clearHistory}>
-                                <TrashIcon />
-                                {t.clear}
-                            </button>
+                             <div className="flex items-center gap-2">
+                                <button onClick={handleCopyConversation} className="flex-shrink-0 flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition" title={t.tooltips.copyConversation}>
+                                    <ClipboardListIcon />
+                                    {conversationCopied ? t.copied : t.copyConversation}
+                                </button>
+                                <button onClick={onClearHistory} className="flex-shrink-0 flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition" title={t.tooltips.clearHistory}>
+                                    <TrashIcon />
+                                    {t.clear}
+                                </button>
+                            </div>
                         )}
                     </div>
                     {isHistoryVisible && (
@@ -500,7 +558,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                                          </div>
                                      )}
                                     <div className="mt-4 pt-4 border-t border-[var(--color-border)]/50 flex flex-wrap gap-x-4 gap-y-2 text-xs text-[var(--color-text-secondary)]">
-                                        <div className="flex items-center gap-1.5"><ModeIcon mode={item.generationMode} /><span>{item.generationMode}</span></div>
+                                        <div className="flex items-center gap-1.5"><ModeIcon modelId={item.modelId} /><span>{modelToDisplayName(item.modelId, t)}</span></div>
                                         <div className="flex items-center gap-1.5"><ToneIcon /><span>{item.tone}</span></div>
                                         <div className="flex items-center gap-1.5"><StyleIcon /><span>{item.responseStyle}</span></div>
                                     </div>

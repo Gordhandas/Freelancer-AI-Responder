@@ -18,6 +18,7 @@ This application runs **entirely in your browser**. No server or build process i
 - **Search Grounding**: Toggle on "Search the web" to allow the AI to use Google Search for up-to-date and accurate information, with sources cited in the response.
 - **AI-Powered Profile**: Configure the AI with your name, skills, portfolio, and experience summary to generate responses that accurately represent you.
 - **Multi-Client Conversation Management**: Maintain separate, organized conversation histories for each client, ensuring context is never lost.
+- **Import/Export Conversations**: Save all your conversations to a local JSON file for backup, or import them into another browser.
 - **Context-Aware Responses**: The AI reads the previous conversation history before generating a new reply, ensuring natural and relevant follow-ups.
 - **Voice Input**: Dictate your client messages using your microphone for faster input.
 - **Adjustable Tone & Style**: Fine-tune the AI's communication by choosing between various tones (Casual, Formal, Enthusiastic) and styles (Short & Sweet, Detailed).
@@ -59,4 +60,4 @@ That's it! The app is ready to use.
     -   Toggle **Search the web** if you need up-to-date information.
 5.  **Generate Response**: Click the "Generate Response" button. The AI will craft a reply based on your profile, the conversation history, and your selected settings.
 6.  **Copy and Use**: Review the generated response and any web sources. If you're happy with it, click the copy icon and paste it into your email or messaging client.
-7.  **Manage Conversations**: Switch between different client conversations using the list in the sidebar. The sidebar can be toggled using the "Conversations" button in the header.
+7.  **Manage Conversations**: Switch between different client conversations using the list in the sidebar. The sidebar can be toggled using the "Conversations" button in the header. You can also import and export all conversations using the icons next to the "Conversations" title.
