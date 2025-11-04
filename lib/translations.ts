@@ -124,6 +124,8 @@ export type TranslationSet = {
         clearHistory: string;
         copyConversation: string;
         replyToMessage: string;
+        goodResponse: string;
+        badResponse: string;
         
         // Conversation List
         selectConversation: string;
@@ -280,6 +282,8 @@ export const translations: Record<Language, TranslationSet> = {
             clearHistory: 'Permanently delete all messages in this conversation.',
             copyConversation: 'Copy the entire conversation history to your clipboard.',
             replyToMessage: 'Use this client message again as the input for a new response.',
+            goodResponse: 'Mark as good response',
+            badResponse: 'Mark as bad response',
             selectConversation: 'Click to view this conversation.',
             renameConversation: 'Double-click to rename this conversation.',
             importConversations: 'Import conversations from a JSON file',
@@ -430,6 +434,8 @@ export const translations: Record<Language, TranslationSet> = {
             clearHistory: 'Eliminar permanentemente todos los mensajes en esta conversación.',
             copyConversation: 'Copiar todo el historial de la conversación al portapapeles.',
             replyToMessage: 'Usar este mensaje del cliente de nuevo como entrada para una nueva respuesta.',
+            goodResponse: 'Marcar como buena respuesta',
+            badResponse: 'Marcar como mala respuesta',
             selectConversation: 'Haz clic para ver esta conversación.',
             renameConversation: 'Doble clic para renombrar esta conversación.',
             importConversations: 'Importar conversaciones desde un archivo JSON',
@@ -570,7 +576,7 @@ export const translations: Record<Language, TranslationSet> = {
             model: 'Sélectionnez le modèle d\'IA sous-jacent. Les modèles plus puissants peuvent avoir une latence légèrement plus élevée.',
             tone: 'Sélectionnez le ton général pour la réponse générée par l\'IA.',
             style: 'Sélectionnez la longueur et le niveau de détail souhaités pour la réponse.',
-            generateResponse: 'Générer une réponse basée sur le message du client, votre profil et les options sélectionnées.',
+            generateResponse: 'Générer une réponse basée sur le message du client, votre profile et les options sélectionnées.',
             retry: 'Tenter de générer à nouveau la réponse. Utile en cas d\'erreur réseau temporaire.',
             editResponse: 'Modifier manuellement la réponse générée avant de la copier.',
             copyResponse: 'Copier la réponse finale dans votre presse-papiers.',
@@ -580,6 +586,8 @@ export const translations: Record<Language, TranslationSet> = {
             clearHistory: 'Supprimer définitivement tous les messages de cette conversation.',
             copyConversation: 'Copier l\'historique entier de la conversation dans le presse-papiers.',
             replyToMessage: 'Utiliser à nouveau ce message client comme entrée pour une nouvelle réponse.',
+            goodResponse: 'Marquer comme bonne réponse',
+            badResponse: 'Marquer comme mauvaise réponse',
             selectConversation: 'Cliquez pour afficher cette conversation.',
             renameConversation: 'Double-cliquez pour renommer cette conversation.',
             importConversations: 'Importer des conversations depuis un fichier JSON',
@@ -730,6 +738,8 @@ export const translations: Record<Language, TranslationSet> = {
             clearHistory: 'この会話のすべてのメッセージを完全に削除します。',
             copyConversation: '会話履歴全体をクリップボードにコピーします。',
             replyToMessage: '新しい応答の入力としてこのクライアントメッセージを再度使用します。',
+            goodResponse: '良い応答としてマーク',
+            badResponse: '悪い応答としてマーク',
             selectConversation: 'クリックしてこの会話を表示します。',
             renameConversation: 'ダブルクリックしてこの会話の名前を変更します。',
             importConversations: 'JSONファイルから会話をインポートする',

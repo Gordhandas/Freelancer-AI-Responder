@@ -533,6 +533,27 @@ const App: React.FC = () => {
         }
     };
 
+    const handleFeedback = (historyItemId: number, feedback: 'good' | 'bad') => {
+        setConversations(prevConversations =>
+            prevConversations.map(convo => {
+                if (convo.id === activeConversationId) {
+                    return {
+                        ...convo,
+                        history: convo.history.map(item => {
+                            if (item.id === historyItemId) {
+                                // If clicking the same feedback again, clear it. Otherwise, set it.
+                                const newFeedback = item.feedback === feedback ? undefined : feedback;
+                                return { ...item, feedback: newFeedback };
+                            }
+                            return item;
+                        })
+                    };
+                }
+                return convo;
+            })
+        );
+    };
+
     if (!isAppInitialized) {
         return <div className="min-h-screen bg-[var(--color-background)]"></div>; // Loading state before we check for API key
     }
@@ -599,6 +620,7 @@ const App: React.FC = () => {
                                 setUseSearch={setUseSearch}
                                 history={activeConversation?.history || []}
                                 onClearHistory={handleClearHistory}
+                                onFeedback={handleFeedback}
                             />
                         ) : (
                             <div className="bg-[var(--color-surface-secondary)]/40 p-6 rounded-2xl border border-[var(--color-border)] h-full flex items-center justify-center animate-fade-in">

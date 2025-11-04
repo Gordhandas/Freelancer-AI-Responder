@@ -20,6 +20,8 @@ import { WebIcon } from './icons/WebIcon';
 import { LoadingIndicator } from './LoadingIndicator';
 import { ErrorIcon } from './icons/ErrorIcon';
 import { ClipboardListIcon } from './icons/ClipboardListIcon';
+import { ThumbUpIcon } from './icons/ThumbUpIcon';
+import { ThumbDownIcon } from './icons/ThumbDownIcon';
 
 
 interface ResponseGeneratorProps {
@@ -40,6 +42,7 @@ interface ResponseGeneratorProps {
     history: HistoryItem[];
     onClearHistory: () => void;
     profile: ProfileData;
+    onFeedback: (historyItemId: number, feedback: 'good' | 'bad') => void;
 }
 
 declare global {
@@ -81,6 +84,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
     history,
     onClearHistory,
     profile,
+    onFeedback,
 }) => {
     const [copied, setCopied] = useState(false);
     const [conversationCopied, setConversationCopied] = useState(false);
@@ -557,10 +561,30 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                                              </div>
                                          </div>
                                      )}
-                                    <div className="mt-4 pt-4 border-t border-[var(--color-border)]/50 flex flex-wrap gap-x-4 gap-y-2 text-xs text-[var(--color-text-secondary)]">
-                                        <div className="flex items-center gap-1.5"><ModeIcon modelId={item.modelId} /><span>{modelToDisplayName(item.modelId, t)}</span></div>
-                                        <div className="flex items-center gap-1.5"><ToneIcon /><span>{item.tone}</span></div>
-                                        <div className="flex items-center gap-1.5"><StyleIcon /><span>{item.responseStyle}</span></div>
+                                    <div className="mt-4 pt-4 border-t border-[var(--color-border)]/50 flex flex-wrap justify-between items-center gap-x-4 gap-y-2 text-xs text-[var(--color-text-secondary)]">
+                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                            <div className="flex items-center gap-1.5"><ModeIcon modelId={item.modelId} /><span>{modelToDisplayName(item.modelId, t)}</span></div>
+                                            <div className="flex items-center gap-1.5"><ToneIcon /><span>{item.tone}</span></div>
+                                            <div className="flex items-center gap-1.5"><StyleIcon /><span>{item.responseStyle}</span></div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => onFeedback(item.id, 'good')}
+                                                className={`p-1.5 rounded-full transition-colors ${item.feedback === 'good' ? 'bg-cyan-500/20 text-cyan-400' : 'hover:bg-[var(--color-interactive-hover)]'}`}
+                                                title={t.tooltips.goodResponse}
+                                                aria-pressed={item.feedback === 'good'}
+                                            >
+                                                <ThumbUpIcon />
+                                            </button>
+                                            <button
+                                                onClick={() => onFeedback(item.id, 'bad')}
+                                                className={`p-1.5 rounded-full transition-colors ${item.feedback === 'bad' ? 'bg-red-500/20 text-red-400' : 'hover:bg-[var(--color-interactive-hover)]'}`}
+                                                title={t.tooltips.badResponse}
+                                                aria-pressed={item.feedback === 'bad'}
+                                            >
+                                                <ThumbDownIcon />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}

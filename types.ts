@@ -31,6 +31,7 @@ export interface HistoryItem {
     responseStyle: ResponseStyle;
     modelId: ModelId;
     searchResults?: SearchResult[];
+    feedback?: 'good' | 'bad';
 }
 
 export interface Conversation {
