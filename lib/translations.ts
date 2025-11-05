@@ -51,6 +51,7 @@ export type TranslationSet = {
         pro: { name: string; description: string; };
     };
     searchTheWeb: string;
+    autoDetectLanguage: string;
     generateResponse: string;
     generating: string;
     generatingMessages: string[];
@@ -110,6 +111,7 @@ export type TranslationSet = {
         voiceInputStop: string;
         voiceInputNotSupported: string;
         toggleWebSearch: string;
+        toggleLanguageDetection: string;
         quickPrompt: (prompt: string) => string;
         model: string;
         tone: string;
@@ -200,6 +202,7 @@ export const translations: Record<Language, TranslationSet> = {
             pro: { name: 'Gemini 2.5 Pro', description: 'For complex reasoning, coding, and creative generation.' },
         },
         searchTheWeb: 'Search the web for up-to-date info',
+        autoDetectLanguage: 'Auto-detect response language',
         generateResponse: 'Generate Response',
         generating: 'Generating...',
         generatingMessages: [
@@ -227,18 +230,27 @@ export const translations: Record<Language, TranslationSet> = {
         promptLibrary: {
             'Freelancer': [
                 { title: "Project Inquiry", prompt: "A potential client is asking about my availability and rates for a new web development project." },
-                { title: "Bug Report", prompt: "A client has found a bug in the application and needs it fixed urgently." },
-                { title: "Follow-up", prompt: "I need to follow up with a client who hasn't responded to my last proposal." },
+                { title: "Quote Request", prompt: "A client gave a vague project description and wants a price. I need to ask clarifying questions before providing a quote." },
+                { title: "Handle Scope Creep", prompt: "A client is asking for more work than was agreed upon. I need to politely address this and suggest a contract amendment." },
+                { title: "Suggest Improvement", prompt: "I've identified a way to improve the client's project. I want to propose this idea, explaining its benefits." },
+                { title: "Weekly Progress Update", prompt: "It's time for a weekly progress report. Summarize completed tasks, next steps, and any blockers." },
+                { title: "Project Handover", prompt: "The project is complete. I need to send a final email with deliverables and ask for a testimonial." },
             ],
             'Student': [
-                { title: "Professor Email", prompt: "I need to email my professor to request an extension for an upcoming assignment." },
-                { title: "Group Project", prompt: "I'm writing a message to my group to schedule a meeting to discuss our project." },
-                { title: "Clarification Request", prompt: "I want to ask my TA for clarification on a concept from the last lecture." },
+                { title: "Request Extension", prompt: "I need to email my professor to respectfully request an extension for an upcoming assignment due to unforeseen circumstances." },
+                { title: "Ask for Clarification", prompt: "I want to ask my TA for clarification on a concept from the last lecture that I'm struggling with." },
+                { title: "Recommendation Letter", prompt: "I need to ask a professor for a strong letter of recommendation for a graduate school application." },
+                { title: "Networking Outreach", prompt: "I'm reaching out to an alum in my field to ask for a brief informational interview about their career path." },
+                { title: "Form a Study Group", prompt: "I want to post a message to my classmates to see who is interested in forming a study group for the final exam." },
+                { title: "Grade Inquiry", prompt: "I have a question about my grade on the recent exam and would like to respectfully inquire about it with the professor." },
             ],
             'Business Owner': [
-                { title: "Customer Complaint", prompt: "A customer is unhappy with their recent purchase and has left a negative review." },
-                { title: "Partnership Proposal", prompt: "I'm reaching out to a potential partner to propose a collaboration." },
-                { title: "Marketing Email", prompt: "Draft a marketing email announcing our new seasonal product line to our subscribers." },
+                { title: "Handle Negative Review", prompt: "A customer left a negative review online. I need to draft a professional public response that addresses their concerns." },
+                { title: "Partnership Proposal", prompt: "I'm reaching out to a potential partner to propose a collaboration that would be mutually beneficial." },
+                { title: "Polite Invoice Reminder", prompt: "A client's invoice is past due. I need to send a polite reminder to follow up on the payment." },
+                { title: "Job Applicant Rejection", prompt: "We've chosen another candidate for a role. I need to send a polite and encouraging rejection email to an applicant." },
+                { title: "Internal Announcement", prompt: "I need to announce a new company-wide policy to all employees in a clear and positive way." },
+                { title: "Vendor Inquiry", prompt: "I need to contact a potential new vendor to inquire about their services, capabilities, and pricing structure." },
             ]
         },
         errors: {
@@ -251,8 +263,8 @@ export const translations: Record<Language, TranslationSet> = {
             unknownError: (errorMessage: string) => `An unexpected error occurred. Please try again.\n\nDetails: ${errorMessage}`,
         },
         tooltips: {
-            toggleSidebarShow: 'Show conversations sidebar',
-            toggleSidebarHide: 'Hide conversations sidebar',
+            toggleSidebarShow: 'Show conversations sidebar (Ctrl+B)',
+            toggleSidebarHide: 'Hide conversations sidebar (Ctrl+B)',
             newConversation: 'Start a new, empty conversation',
             toggleLightMode: 'Switch to light mode',
             toggleDarkMode: 'Switch to dark mode',
@@ -263,16 +275,17 @@ export const translations: Record<Language, TranslationSet> = {
             portfolio: (role: UserRole) => `Enter the full URL to your portfolio, website, or profile page. The AI can share this link if relevant.`,
             experience: (role: UserRole) => `Provide a brief summary of your experience. This will be used by the AI to introduce you as a ${role}.`,
             changeApiKey: 'Forget the current API key and enter a new one.',
-            clientMessage: 'Enter or paste the full message. Use Shift+Enter for a new line, and Enter to send.',
+            clientMessage: 'Enter or paste the full message. Use Shift+Enter for a new line. (Ctrl+M to focus)',
             voiceInputStart: 'Start voice input (requires microphone permission)',
             voiceInputStop: 'Stop listening',
             voiceInputNotSupported: 'Your browser does not support speech recognition.',
             toggleWebSearch: 'Toggle web search. When enabled, the AI can search Google for up-to-date information and will cite its sources.',
+            toggleLanguageDetection: 'Toggle language auto-detection. When enabled, the AI will respond in the language of the client\'s message.',
             quickPrompt: (prompt: string) => `Use this prompt: "${prompt}"`,
             model: 'Select the underlying AI model. More powerful models may have slightly higher latency.',
             tone: 'Select the overall tone for the AI-generated response.',
             style: 'Select the desired length and level of detail for the response.',
-            generateResponse: 'Generate a response based on the client message, your profile, and selected options.',
+            generateResponse: 'Generate a response based on the client message, your profile, and selected options. (Ctrl+Enter)',
             retry: 'Try generating the response again. This can be useful if there was a temporary network error.',
             editResponse: 'Manually edit the generated response before copying.',
             copyResponse: 'Copy the final response to your clipboard.',
@@ -352,6 +365,7 @@ export const translations: Record<Language, TranslationSet> = {
             pro: { name: 'Gemini 2.5 Pro', description: 'Para razonamiento complejo, codificación y generación creativa.' },
         },
         searchTheWeb: 'Buscar en la web para información actualizada',
+        autoDetectLanguage: 'Autodetectar idioma de respuesta',
         generateResponse: 'Generar Respuesta',
         generating: 'Generando...',
         generatingMessages: [
@@ -379,18 +393,27 @@ export const translations: Record<Language, TranslationSet> = {
         promptLibrary: {
             'Freelancer': [
                 { title: "Consulta de Proyecto", prompt: "Un cliente potencial pregunta sobre mi disponibilidad y tarifas para un nuevo proyecto de desarrollo web." },
-                { title: "Reporte de Error", prompt: "Un cliente ha encontrado un error en la aplicación y necesita que se arregle urgentemente." },
-                { title: "Seguimiento", prompt: "Necesito hacer un seguimiento a un cliente que no ha respondido a mi última propuesta." },
+                { title: "Solicitud de Cotización", prompt: "Un cliente dio una descripción vaga del proyecto y quiere un precio. Necesito hacer preguntas aclaratorias antes de dar una cotización." },
+                { title: "Manejar 'Scope Creep'", prompt: "Un cliente está pidiendo más trabajo del acordado. Necesito abordar esto amablemente y sugerir una enmienda al contrato." },
+                { title: "Sugerir Mejora", prompt: "He identificado una forma de mejorar el proyecto del cliente. Quiero proponer esta idea, explicando sus beneficios." },
+                { title: "Actualización Semanal", prompt: "Es hora del informe de progreso semanal. Resume las tareas completadas, los próximos pasos y cualquier obstáculo." },
+                { title: "Entrega de Proyecto", prompt: "El proyecto está completo. Necesito enviar un email final con los entregables y pedir un testimonio." },
             ],
             'Student': [
-                { title: "Email a Profesor", prompt: "Necesito enviar un email a mi profesor para solicitar una prórroga en una tarea." },
-                { title: "Proyecto en Grupo", prompt: "Estoy escribiendo un mensaje a mi grupo para programar una reunión y discutir nuestro proyecto." },
-                { title: "Solicitud de Aclaración", prompt: "Quiero pedirle a mi asistente de cátedra que aclare un concepto de la última clase." },
+                { title: "Solicitar Prórroga", prompt: "Necesito enviar un email a mi profesor para solicitar respetuosamente una prórroga para una tarea debido a circunstancias imprevistas." },
+                { title: "Pedir Aclaración", prompt: "Quiero pedirle a mi asistente de cátedra que aclare un concepto de la última clase con el que tengo dificultades." },
+                { title: "Carta de Recomendación", prompt: "Necesito pedirle a un profesor una carta de recomendación sólida para una solicitud de posgrado." },
+                { title: "Contacto de Networking", prompt: "Me estoy comunicando con un exalumno en mi campo para pedir una breve entrevista informativa sobre su trayectoria profesional." },
+                { title: "Formar Grupo de Estudio", prompt: "Quiero publicar un mensaje a mis compañeros para ver quién está interesado en formar un grupo de estudio para el examen final." },
+                { title: "Consulta de Calificación", prompt: "Tengo una pregunta sobre mi calificación en el examen reciente y me gustaría consultarlo respetuosamente con el profesor." },
             ],
             'Business Owner': [
-                { title: "Queja de Cliente", prompt: "Un cliente no está satisfecho con su compra reciente y ha dejado una reseña negativa." },
-                { title: "Propuesta de Asociación", prompt: "Me estoy comunicando con un socio potencial para proponer una colaboración." },
-                { title: "Email de Marketing", prompt: "Redactar un email de marketing anunciando nuestra nueva línea de productos de temporada a nuestros suscriptores." },
+                { title: "Manejar Reseña Negativa", prompt: "Un cliente dejó una reseña negativa en línea. Necesito redactar una respuesta pública y profesional que aborde sus preocupaciones." },
+                { title: "Propuesta de Asociación", prompt: "Me estoy comunicando con un socio potencial para proponer una colaboración que sería mutuamente beneficiosa." },
+                { title: "Recordatorio Amable de Factura", prompt: "La factura de un cliente está vencida. Necesito enviar un recordatorio amable para hacer seguimiento del pago." },
+                { title: "Rechazo de Candidato", prompt: "Hemos elegido a otro candidato para un puesto. Necesito enviar un email de rechazo amable y alentador a un solicitante." },
+                { title: "Anuncio Interno", prompt: "Necesito anunciar una nueva política para toda la empresa a todos los empleados de una manera clara y positiva." },
+                { title: "Consulta a Proveedor", prompt: "Necesito contactar a un nuevo proveedor potencial para preguntar sobre sus servicios, capacidades y estructura de precios." },
             ]
         },
         errors: {
@@ -403,8 +426,8 @@ export const translations: Record<Language, TranslationSet> = {
             unknownError: (errorMessage: string) => `Ocurrió un error inesperado. Por favor, inténtalo de nuevo.\n\nDetalles: ${errorMessage}`,
         },
         tooltips: {
-            toggleSidebarShow: 'Mostrar barra lateral de conversaciones',
-            toggleSidebarHide: 'Ocultar barra lateral de conversaciones',
+            toggleSidebarShow: 'Mostrar barra lateral de conversaciones (Ctrl+B)',
+            toggleSidebarHide: 'Ocultar barra lateral de conversaciones (Ctrl+B)',
             newConversation: 'Comenzar una nueva conversación vacía',
             toggleLightMode: 'Cambiar a modo claro',
             toggleDarkMode: 'Cambiar a modo oscuro',
@@ -415,18 +438,19 @@ export const translations: Record<Language, TranslationSet> = {
             portfolio: (role: UserRole) => `Ingresa la URL completa de tu portafolio, sitio web o página de perfil. La IA puede compartir este enlace si es relevante.`,
             experience: (role: UserRole) => `Proporciona un breve resumen de tu experiencia. Esto será utilizado por la IA para presentarte como ${role}.`,
             changeApiKey: 'Olvidar la clave de API actual e ingresar una nueva.',
-            clientMessage: 'Ingresa o pega el mensaje completo. Usa Shift+Enter para una nueva línea y Enter para enviar.',
+            clientMessage: 'Ingresa o pega el mensaje completo. Usa Shift+Enter para una nueva línea. (Ctrl+M para enfocar)',
             voiceInputStart: 'Iniciar entrada de voz (requiere permiso de micrófono)',
             voiceInputStop: 'Dejar de escuchar',
             voiceInputNotSupported: 'Tu navegador no admite el reconocimiento de voz.',
             toggleWebSearch: 'Activar/desactivar búsqueda web. Cuando está activado, la IA puede buscar en Google información actualizada y citará sus fuentes.',
+            toggleLanguageDetection: 'Activar/desactivar la autodetección de idioma. Cuando está activado, la IA responderá en el idioma del mensaje del cliente.',
             quickPrompt: (prompt: string) => `Usar esta plantilla: "${prompt}"`,
             model: 'Selecciona el modelo de IA subyacente. Los modelos más potentes pueden tener una latencia ligeramente mayor.',
             tone: 'Selecciona el tono general para la respuesta generada por la IA.',
             style: 'Selecciona la longitud y el nivel de detalle deseados para la respuesta.',
-            generateResponse: 'Generar una respuesta basada en el mensaje del cliente, tu perfil y las opciones seleccionadas.',
+            generateResponse: 'Generar una respuesta basada en el mensaje del cliente, tu perfil y las opciones seleccionadas. (Ctrl+Enter)',
             retry: 'Intentar generar la respuesta de nuevo. Esto puede ser útil si hubo un error de red temporal.',
-            editResponse: 'Editar manualmente la respuesta generada antes de copiar.',
+            editResponse: 'Editar manually la respuesta generada antes de copiar.',
             copyResponse: 'Copiar la respuesta final a tu portapapeles.',
             saveChanges: 'Guardar tus ediciones en la respuesta.',
             cancelChanges: 'Descartar tus ediciones y volver a la respuesta original generada por la IA.',
@@ -504,6 +528,7 @@ export const translations: Record<Language, TranslationSet> = {
             pro: { name: 'Gemini 2.5 Pro', description: 'Pour le raisonnement complexe, le codage et la génération créative.' },
         },
         searchTheWeb: 'Rechercher sur le web pour des informations à jour',
+        autoDetectLanguage: 'Détecter automatiquement la langue de la réponse',
         generateResponse: 'Générer une Réponse',
         generating: 'Génération...',
         generatingMessages: [
@@ -531,18 +556,27 @@ export const translations: Record<Language, TranslationSet> = {
         promptLibrary: {
             'Freelancer': [
                 { title: "Demande de Projet", prompt: "Un client potentiel s'interroge sur ma disponibilité et mes tarifs pour un nouveau projet de développement web." },
-                { title: "Rapport de Bogue", prompt: "Un client a trouvé un bogue dans l'application et a besoin qu'il soit corrigé de toute urgence." },
-                { title: "Relance", prompt: "Je dois relancer un client qui n'a pas répondu à ma dernière proposition." },
+                { title: "Demande de Devis", prompt: "Un client a donné une description vague du projet et veut un prix. Je dois poser des questions de clarification avant de fournir un devis." },
+                { title: "Gérer le 'Scope Creep'", prompt: "Un client demande plus de travail que ce qui a été convenu. Je dois aborder cela poliment et suggérer un avenant au contrat." },
+                { title: "Suggérer une Amélioration", prompt: "J'ai identifié un moyen d'améliorer le projet du client. Je veux proposer cette idée, en expliquant ses avantages." },
+                { title: "Mise à Jour Hebdomadaire", prompt: "C'est l'heure du rapport d'avancement hebdomadaire. Résumez les tâches terminées, les prochaines étapes et les éventuels blocages." },
+                { title: "Livraison de Projet", prompt: "Le projet est terminé. Je dois envoyer un email final avec les livrables et demander un témoignage." },
             ],
             'Student': [
-                { title: "Email au Professeur", prompt: "Je dois envoyer un email à mon professeur pour demander un délai supplémentaire pour un devoir." },
-                { title: "Projet de Groupe", prompt: "J'écris un message à mon groupe pour planifier une réunion afin de discuter de notre projet." },
-                { title: "Demande de Clarification", prompt: "Je veux demander à mon assistant de cours des éclaircissements sur un concept de la dernière conférence." },
+                { title: "Demander un Délai", prompt: "Je dois envoyer un email à mon professeur pour demander respectueusement un délai supplémentaire pour un devoir en raison de circonstances imprévues." },
+                { title: "Demander des Éclaircissements", prompt: "Je veux demander à mon assistant de cours des éclaircissements sur un concept de la dernière conférence que j'ai du mal à comprendre." },
+                { title: "Lettre de Recommandation", prompt: "Je dois demander à un professeur une lettre de recommandation solide pour une candidature en master." },
+                { title: "Prise de Contact (Réseautage)", prompt: "Je contacte un ancien élève de mon domaine pour demander un bref entretien d'information sur son parcours professionnel." },
+                { title: "Former un Groupe d'Étude", prompt: "Je veux poster un message à mes camarades pour voir qui est intéressé pour former un groupe de révision pour l'examen final." },
+                { title: "Question sur une Note", prompt: "J'ai une question sur ma note au récent examen et j'aimerais en discuter respectueusement avec le professeur." },
             ],
             'Business Owner': [
-                { title: "Plainte de Client", prompt: "Un client est mécontent de son récent achat et a laissé un avis négatif." },
-                { title: "Proposition de Partenariat", prompt: "Je contacte un partenaire potentiel pour proposer une collaboration." },
-                { title: "Email Marketing", prompt: "Rédiger un email marketing annonçant notre nouvelle gamme de produits saisonniers à nos abonnés." },
+                { title: "Gérer un Avis Négatif", prompt: "Un client a laissé un avis négatif en ligne. Je dois rédiger une réponse publique professionnelle qui répond à ses préoccupations." },
+                { title: "Proposition de Partenariat", prompt: "Je contacte un partenaire potentiel pour proposer une collaboration qui serait mutuellement bénéfique." },
+                { title: "Rappel de Facture Poli", prompt: "La facture d'un client est en retard. Je dois envoyer un rappel poli pour le suivi du paiement." },
+                { title: "Refus de Candidature", prompt: "Nous avons choisi un autre candidat pour un poste. Je dois envoyer un email de refus poli et encourageant à un candidat." },
+                { title: "Annonce Interne", prompt: "Je dois announcer une nouvelle politique à l'échelle de l'entreprise à tous les employés de manière claire et positive." },
+                { title: "Demande d'Information Fournisseur", prompt: "Je dois contacter un nouveau fournisseur potentiel pour me renseigner sur ses services, ses capacités et sa grille tarifaire." },
             ]
         },
         errors: {
@@ -555,8 +589,8 @@ export const translations: Record<Language, TranslationSet> = {
             unknownError: (errorMessage: string) => `Une erreur inattendue est survenue. Veuillez réessayer.\n\nDétails : ${errorMessage}`,
         },
         tooltips: {
-            toggleSidebarShow: 'Afficher la barre latérale des conversations',
-            toggleSidebarHide: 'Masquer la barre latérale des conversations',
+            toggleSidebarShow: 'Afficher la barre latérale des conversations (Ctrl+B)',
+            toggleSidebarHide: 'Masquer la barre latérale des conversations (Ctrl+B)',
             newConversation: 'Démarrer une nouvelle conversation vide',
             toggleLightMode: 'Passer en mode clair',
             toggleDarkMode: 'Passer en mode sombre',
@@ -567,16 +601,17 @@ export const translations: Record<Language, TranslationSet> = {
             portfolio: (role: UserRole) => `Entrez l'URL complète de votre portfolio, site web ou page de profil. L'IA peut partager ce lien si pertinent.`,
             experience: (role: UserRole) => `Fournissez un bref résumé de votre expérience. Il sera utilisé par l'IA pour vous présenter en tant que ${role}.`,
             changeApiKey: 'Oublier la clé API actuelle et en saisir une nouvelle.',
-            clientMessage: 'Saisissez ou collez le message complet. Utilisez Maj+Entrée pour une nouvelle ligne et Entrée pour envoyer.',
+            clientMessage: 'Saisissez ou collez le message complet. Utilisez Maj+Entrée pour une nouvelle ligne. (Ctrl+M pour mettre le focus)',
             voiceInputStart: 'Démarrer la saisie vocale (nécessite l\'autorisation du microphone)',
             voiceInputStop: 'Arrêter l\'écoute',
             voiceInputNotSupported: 'Votre navigateur ne prend pas en charge la reconnaissance vocale.',
             toggleWebSearch: 'Activer/Désactiver la recherche web. Lorsque cette option est activée, l\'IA peut rechercher des informations à jour sur Google et citera ses sources.',
+            toggleLanguageDetection: 'Activer/désactiver la détection automatique de la langue. Lorsque cette option est activée, l\'IA répondra dans la langue du message du client.',
             quickPrompt: (prompt: string) => `Utiliser cette suggestion : "${prompt}"`,
             model: 'Sélectionnez le modèle d\'IA sous-jacent. Les modèles plus puissants peuvent avoir une latence légèrement plus élevée.',
             tone: 'Sélectionnez le ton général pour la réponse générée par l\'IA.',
             style: 'Sélectionnez la longueur et le niveau de détail souhaités pour la réponse.',
-            generateResponse: 'Générer une réponse basée sur le message du client, votre profile et les options sélectionnées.',
+            generateResponse: 'Générer une réponse basée sur le message du client, votre profile et les options sélectionnées. (Ctrl+Enter)',
             retry: 'Tenter de générer à nouveau la réponse. Utile en cas d\'erreur réseau temporaire.',
             editResponse: 'Modifier manuellement la réponse générée avant de la copier.',
             copyResponse: 'Copier la réponse finale dans votre presse-papiers.',
@@ -656,6 +691,7 @@ export const translations: Record<Language, TranslationSet> = {
             pro: { name: 'Gemini 2.5 Pro', description: '複雑な推論、コーディング、創造的な生成向けです。' },
         },
         searchTheWeb: 'ウェブで最新情報を検索',
+        autoDetectLanguage: '応答言語を自動検出',
         generateResponse: '返信を生成',
         generating: '生成中...',
         generatingMessages: [
@@ -683,18 +719,27 @@ export const translations: Record<Language, TranslationSet> = {
         promptLibrary: {
             'Freelancer': [
                 { title: "プロジェクトの問い合わせ", prompt: "潜在的なクライアントから、新しいウェブ開発プロジェクトの空き状況と料金について問い合わせがありました。" },
-                { title: "バグ報告", prompt: "クライアントがアプリケーションでバグを発見し、緊急の修正を求めています。" },
-                { title: "フォローアップ", prompt: "前回の提案に返信がないクライアントにフォローアップする必要があります。" },
+                { title: "見積依頼", prompt: "クライアントから曖昧なプロジェクト説明で見積もりを依頼されました。見積もりを出す前に、明確化するための質問をする必要があります。" },
+                { title: "スコープクリープへの対応", prompt: "クライアントが合意した以上の作業を要求しています。これに丁寧に対応し、契約の修正を提案する必要があります。" },
+                { title: "改善提案", prompt: "クライアントのプロジェクトを改善する方法を見つけました。その利点を説明し、このアイデアを提案したいです。" },
+                { title: "週次進捗報告", prompt: "週次の進捗報告の時間です。完了したタスク、次のステップ、および障害となっている点を要約してください。" },
+                { title: "プロジェクトの引き渡し", prompt: "プロジェクトが完了しました。成果物を記載した最終メールを送り、推薦文を依頼する必要があります。" },
             ],
             'Student': [
-                { title: "教授へのメール", prompt: "今後の課題の延長を依頼するために、教授にメールを送る必要があります。" },
-                { title: "グループプロジェクト", prompt: "プロジェクトについて話し合うための会議を計画するために、グループにメッセージを書いています。" },
-                { title: "質問", prompt: "前回の講義の概念について、TAに明確な説明を求めたいです。" },
+                { title: "提出期限の延長願い", prompt: "予期せぬ事態のため、今後の課題の提出期限延長を教授に丁重にお願いするメールを送る必要があります。" },
+                { title: "質問・確認", prompt: "前回の講義で理解が難しかった概念について、TAに明確な説明を求めたいです。" },
+                { title: "推薦状のお願い", prompt: "大学院出願のために、教授に力強い推薦状をお願いする必要があります。" },
+                { title: "ネットワーキングのための連絡", prompt: "自分の分野の卒業生に連絡を取り、キャリアパスについて簡単な情報提供インタビューをお願いしたいです。" },
+                { title: "勉強会の結成", prompt: "期末試験のために勉強会を結成することに興味がある人がいるか、クラスメートにメッセージを投稿したいです。" },
+                { title: "成績についての問い合わせ", prompt: "最近の試験の成績について質問があり、教授に丁重に問い合わせたいです。" },
             ],
             'Business Owner': [
-                { title: "顧客の苦情", prompt: "最近の購入に不満を持っている顧客が、否定的なレビューを残しました。" },
-                { title: "提携提案", prompt: "協力関係を提案するために、潜在的なパートナーに連絡を取っています。" },
-                { title: "マーケティングメール", prompt: "新しい季節限定商品ラインを購読者に知らせるマーケティングメールを作成します。" },
+                { title: "否定的なレビューへの対応", prompt: "顧客がオンラインで否定的なレビューを残しました。彼らの懸念に対応する、プロフェッショナルな公開返信を作成する必要があります。" },
+                { title: "提携提案", prompt: "相互に利益のある協力を提案するために、潜在的なパートナーに連絡を取っています。" },
+                { title: "請求書の丁寧な催促", prompt: "クライアントの請求書の支払いが期限を過ぎています。支払いのフォローアップのために、丁寧な催促メールを送る必要があります。" },
+                { title: "不採用通知", prompt: "あるポジションに別の候補者を選びました。応募者には丁寧で励ますような不採用通知メールを送る必要があります。" },
+                { title: "社内通知", prompt: "全社的な新しい方針を、明確かつ肯定的な方法で全従業員に発表する必要があります。" },
+                { title: "ベンダーへの問い合わせ", prompt: "新しい潜在的なベンダーに連絡し、そのサービス、能力、価格体系について問い合わせる必要があります。" },
             ]
         },
         errors: {
@@ -707,8 +752,8 @@ export const translations: Record<Language, TranslationSet> = {
             unknownError: (errorMessage: string) => `予期せぬエラーが発生しました。もう一度お試しください。\n\n詳細: ${errorMessage}`,
         },
         tooltips: {
-            toggleSidebarShow: '会話サイドバーを表示',
-            toggleSidebarHide: '会話サイドバーを非表示',
+            toggleSidebarShow: '会話サイドバーを表示 (Ctrl+B)',
+            toggleSidebarHide: '会話サイドバーを非表示 (Ctrl+B)',
             newConversation: '新しい空の会話を開始',
             toggleLightMode: 'ライトモードに切り替え',
             toggleDarkMode: 'ダークモードに切り替え',
@@ -719,16 +764,17 @@ export const translations: Record<Language, TranslationSet> = {
             portfolio: (role: UserRole) => `ポートフォリオ、ウェブサイト、またはプロフィールページの完全なURLを入力してください。AIは関連する場合にこのリンクを共有できます。`,
             experience: (role: UserRole) => `あなたの経験の簡単な要約を提供してください。これは、AIが${role}としてあなたを紹介するために使用されます。`,
             changeApiKey: '現在のAPIキーを忘れて新しいものを入力します。',
-            clientMessage: 'メッセージを入力または貼り付けてください。Shift+Enterで改行、Enterで送信します。',
+            clientMessage: 'メッセージを入力または貼り付けてください。Shift+Enterで改行します。(Ctrl+Mでフォーカス)',
             voiceInputStart: '音声入力を開始（マイクの許可が必要です）',
             voiceInputStop: '聞き取りを停止',
             voiceInputNotSupported: 'お使いのブラウザは音声認識をサポートしていません。',
             toggleWebSearch: 'ウェブ検索を切り替えます。有効にすると、AIはGoogleで最新情報を検索し、その情報源を引用します。',
+            toggleLanguageDetection: '言語の自動検出を切り替えます。有効にすると、AIはクライアントのメッセージの言語で応答します。',
             quickPrompt: (prompt: string) => `このプロンプトを使用する: "${prompt}"`,
             model: '基盤となるAIモデルを選択します。より強力なモデルは、レイテンシがわずかに高くなる場合があります。',
             tone: 'AIが生成する応答の全体的なトーンを選択してください。',
             style: '応答の希望する長さと詳細レベルを選択してください。',
-            generateResponse: 'クライアントのメッセージ、あなたのプロフィール、選択したオプションに基づいて応答を生成します。',
+            generateResponse: 'クライアントのメッセージ、あなたのプロフィール、選択したオプションに基づいて応答を生成します。(Ctrl+Enter)',
             retry: '応答の生成を再試行します。一時的なネットワークエラーがあった場合に便利です。',
             editResponse: 'コピーする前に生成された応答を手動で編集します。',
             copyResponse: '最終的な応答をクリップボードにコピーします。',

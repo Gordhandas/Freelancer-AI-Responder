@@ -40,6 +40,8 @@ interface ResponseGeneratorProps {
     setModelId: (mode: ModelId) => void;
     useSearch: boolean;
     setUseSearch: (use: boolean) => void;
+    autoDetectLanguage: boolean;
+    setAutoDetectLanguage: (auto: boolean) => void;
     history: HistoryItem[];
     onClearHistory: () => void;
     profile: ProfileData;
@@ -82,6 +84,8 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
     setModelId,
     useSearch,
     setUseSearch,
+    autoDetectLanguage,
+    setAutoDetectLanguage,
     history,
     onClearHistory,
     profile,
@@ -246,7 +250,9 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        const isSubmit = (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) || (e.key === 'Enter' && !e.shiftKey);
+        
+        if (isSubmit) {
             e.preventDefault();
             if (!isLoading) {
                 onGenerate();
@@ -362,7 +368,7 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                     </div>
                 ))}
             </div>
-             <div className="flex items-center justify-start pt-2">
+             <div className="flex flex-wrap items-center justify-start pt-2 gap-x-8 gap-y-4">
                 <label htmlFor="search-toggle" className="flex items-center cursor-pointer select-none" title={t.tooltips.toggleWebSearch}>
                     <div className="relative">
                         <input type="checkbox" id="search-toggle" className="sr-only" checked={useSearch} onChange={() => setUseSearch(!useSearch)} />
@@ -370,6 +376,14 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                         <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${useSearch ? 'translate-x-6' : ''}`}></div>
                     </div>
                     <span className="ml-3 text-[var(--color-text-secondary)] font-medium text-sm">{t.searchTheWeb}</span>
+                </label>
+                 <label htmlFor="lang-detect-toggle" className="flex items-center cursor-pointer select-none" title={t.tooltips.toggleLanguageDetection}>
+                    <div className="relative">
+                        <input type="checkbox" id="lang-detect-toggle" className="sr-only" checked={autoDetectLanguage} onChange={() => setAutoDetectLanguage(!autoDetectLanguage)} />
+                        <div className={`block w-12 h-6 rounded-full transition ${autoDetectLanguage ? 'bg-violet-500' : 'bg-[var(--color-interactive)]'}`}></div>
+                        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${autoDetectLanguage ? 'translate-x-6' : ''}`}></div>
+                    </div>
+                    <span className="ml-3 text-[var(--color-text-secondary)] font-medium text-sm">{t.autoDetectLanguage}</span>
                 </label>
             </div>
 

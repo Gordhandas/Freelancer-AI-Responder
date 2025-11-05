@@ -45,9 +45,9 @@ const getStyleInstruction = (style: ResponseStyle) => {
     }
 };
 
-const getSystemInstruction = (profile: ProfileData) => {
+const getSystemInstruction = (profile: ProfileData, responseLanguage: Language) => {
     const portfolioInstruction = profile.portfolioUrl ? `\nMy portfolio/website is available at: ${profile.portfolioUrl}. You can share this link if it's relevant.` : '';
-    const languageInstruction = `\nIMPORTANT: You MUST respond in ${profile.language}.`;
+    const languageInstruction = `\nIMPORTANT: You MUST respond in ${responseLanguage}.`;
 
     let roleInstruction = '';
 
@@ -154,6 +154,10 @@ const App: React.FC = () => {
     const [isAppInitialized, setIsAppInitialized] = useState(false);
     const [modelId, setModelId] = useState<ModelId>('gemini-2.5-flash');
     const [useSearch, setUseSearch] = useState<boolean>(false);
+    const [autoDetectLanguage, setAutoDetectLanguage] = useState<boolean>(() => {
+        const saved = localStorage.getItem('autoDetectLanguage');
+        return saved ? JSON.parse(saved) : true; // Default to true
+    });
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         const savedTheme = localStorage.getItem('app-theme');
         if (savedTheme === 'light' || savedTheme === 'dark') {
@@ -170,6 +174,10 @@ const App: React.FC = () => {
             document.documentElement.classList.remove('dark');
         }
     }, [theme]);
+
+    useEffect(() => {
+        localStorage.setItem('autoDetectLanguage', JSON.stringify(autoDetectLanguage));
+    }, [autoDetectLanguage]);
 
     useEffect(() => {
         const savedKey = localStorage.getItem('geminiApiKey');
@@ -261,6 +269,30 @@ const App: React.FC = () => {
         localStorage.setItem('freelancerProfile', JSON.stringify(profile));
     }, [profile]);
 
+    // Global keyboard shortcuts
+    useEffect(() => {
+        const handleGlobalKeyDown = (e: KeyboardEvent) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key.toLowerCase()) {
+                    case 'b':
+                        e.preventDefault();
+                        setIsSidebarVisible(prev => !prev);
+                        break;
+                    case 'm':
+                        e.preventDefault();
+                        document.getElementById('clientMessage')?.focus();
+                        break;
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleGlobalKeyDown);
+
+        return () => {
+            window.removeEventListener('keydown', handleGlobalKeyDown);
+        };
+    }, []); // Empty dependency array ensures this runs only once
+
 
     const activeConversation = useMemo(() => {
         return conversations.find(c => c.id === activeConversationId);
@@ -306,7 +338,28 @@ const App: React.FC = () => {
         const ai = new GoogleGenAI({ apiKey });
 
         try {
-            const baseSystemInstruction = getSystemInstruction(profile);
+            let responseLanguage: Language = profile.language;
+
+            if (autoDetectLanguage) {
+                try {
+                    const detectionPrompt = `Detect the primary language of the following text. Respond with only the name of the language in English (e.g., "Spanish", "French", "Japanese"). If you are unsure, respond with "${profile.language}". Text: "${clientMessage}"`;
+                    const detectionResponse = await ai.models.generateContent({
+                        model: 'gemini-flash-lite-latest',
+                        contents: detectionPrompt,
+                    });
+                    const detectedLang = detectionResponse.text.trim();
+                    const formattedLang = detectedLang.charAt(0).toUpperCase() + detectedLang.slice(1).toLowerCase();
+                    const supportedLanguages: Language[] = ['English', 'Spanish', 'French', 'Japanese'];
+
+                    if (supportedLanguages.includes(formattedLang as Language)) {
+                        responseLanguage = formattedLang as Language;
+                    }
+                } catch (detectionError) {
+                    console.error("Language detection failed, falling back to profile language.", detectionError);
+                }
+            }
+
+            const baseSystemInstruction = getSystemInstruction(profile, responseLanguage);
 
             const systemInstruction = `${baseSystemInstruction}\n\nFor this specific response, follow these stylistic overrides:\n- Tone: ${getToneInstruction(tone)}\n- Style: ${getStyleInstruction(responseStyle)}`;
             
@@ -618,6 +671,8 @@ const App: React.FC = () => {
                                 setModelId={setModelId}
                                 useSearch={useSearch}
                                 setUseSearch={setUseSearch}
+                                autoDetectLanguage={autoDetectLanguage}
+                                setAutoDetectLanguage={setAutoDetectLanguage}
                                 history={activeConversation?.history || []}
                                 onClearHistory={handleClearHistory}
                                 onFeedback={handleFeedback}
