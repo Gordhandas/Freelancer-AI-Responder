@@ -22,6 +22,7 @@ import { ErrorIcon } from './icons/ErrorIcon';
 import { ClipboardListIcon } from './icons/ClipboardListIcon';
 import { ThumbUpIcon } from './icons/ThumbUpIcon';
 import { ThumbDownIcon } from './icons/ThumbDownIcon';
+import { UserIcon } from './icons/UserIcon';
 
 
 interface ResponseGeneratorProps {
@@ -521,69 +522,80 @@ export const ResponseGenerator: React.FC<ResponseGeneratorProps> = ({
                     {isHistoryVisible && (
                         <div className="space-y-6">
                             {historyHtml.map((item, index) => (
-                                <div key={item.id} className={`p-4 bg-[var(--color-interactive)]/30 rounded-lg border border-[var(--color-border)]/50 transition-all ${index === 0 ? 'border-violet-500/50 shadow-lg shadow-violet-500/5' : ''}`}>
-                                    <div className="flex justify-between items-center border-b border-[var(--color-border)]/50 pb-3 mb-3">
-                                        <p className="text-sm font-semibold text-[var(--color-text-secondary)]">{t.client}</p>
-                                        <button 
-                                            onClick={() => handleReply(item.clientMessage)} 
-                                            className="flex items-center gap-1.5 bg-[var(--color-interactive)]/50 hover:bg-[var(--color-interactive)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] font-semibold py-1 px-2.5 rounded-md transition text-xs"
-                                            aria-label="Reply to this message"
-                                            title={t.tooltips.replyToMessage}>
-                                            <ReplyIcon />
-                                            {t.reply}
-                                        </button>
-                                    </div>
-                                    <p className="text-[var(--color-text-secondary)] whitespace-pre-wrap text-sm mb-4">{item.clientMessage}</p>
-                                    <p className="text-sm font-semibold text-[var(--color-text-primary)] mb-3 border-b border-[var(--color-border)]/50 pb-3">{t.you}</p>
-                                    <div 
-                                        className="prose-custom prose-sm max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: item.generatedResponseHtml }}
-                                    />
-                                    {item.searchResults && item.searchResults.length > 0 && (
-                                         <div className="mt-4 pt-4 border-t border-[var(--color-border)]/50">
-                                             <h4 className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-secondary)] mb-2">
-                                                 <WebIcon /> {t.searchResults}
-                                             </h4>
-                                             <div className="grid grid-cols-1 gap-2 text-xs">
-                                                 {item.searchResults.map((source, idx) => (
-                                                     <a 
-                                                         key={idx}
-                                                         href={source.uri}
-                                                         target="_blank"
-                                                         rel="noopener noreferrer"
-                                                         className="bg-[var(--color-interactive)]/40 hover:bg-[var(--color-interactive)]/70 p-2 rounded-md truncate transition-colors group"
-                                                         title={source.uri}
-                                                     >
-                                                         <p className="font-medium text-[var(--color-text-secondary)] group-hover:text-cyan-400 truncate">{source.title}</p>
-                                                         <p className="text-[var(--color-text-placeholder)] truncate">{source.uri}</p>
-                                                     </a>
-                                                 ))}
-                                             </div>
-                                         </div>
-                                     )}
-                                    <div className="mt-4 pt-4 border-t border-[var(--color-border)]/50 flex flex-wrap justify-between items-center gap-x-4 gap-y-2 text-xs text-[var(--color-text-secondary)]">
-                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                                            <div className="flex items-center gap-1.5"><ModeIcon modelId={item.modelId} /><span>{modelToDisplayName(item.modelId, t)}</span></div>
-                                            <div className="flex items-center gap-1.5"><ToneIcon /><span>{item.tone}</span></div>
-                                            <div className="flex items-center gap-1.5"><StyleIcon /><span>{item.responseStyle}</span></div>
+                                <div key={item.id} className={`bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]/50 transition-all overflow-hidden ${index === 0 ? 'border-violet-500/50 shadow-lg shadow-violet-500/5' : ''}`}>
+                                    {/* Client Message */}
+                                    <div className="p-4 bg-[var(--color-surface-secondary)]">
+                                        <div className="flex justify-between items-center mb-3">
+                                            <p className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text-secondary)]">
+                                                <UserIcon className="h-5 w-5" />
+                                                {t.client}
+                                            </p>
+                                            <button 
+                                                onClick={() => handleReply(item.clientMessage)} 
+                                                className="flex items-center gap-1.5 bg-[var(--color-surface)]/50 hover:bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] font-semibold py-1 px-2.5 rounded-md transition text-xs"
+                                                aria-label="Reply to this message"
+                                                title={t.tooltips.replyToMessage}>
+                                                <ReplyIcon />
+                                                {t.reply}
+                                            </button>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => onFeedback(item.id, 'good')}
-                                                className={`p-1.5 rounded-full transition-colors ${item.feedback === 'good' ? 'bg-cyan-500/20 text-cyan-400' : 'hover:bg-[var(--color-interactive-hover)]'}`}
-                                                title={t.tooltips.goodResponse}
-                                                aria-pressed={item.feedback === 'good'}
-                                            >
-                                                <ThumbUpIcon />
-                                            </button>
-                                            <button
-                                                onClick={() => onFeedback(item.id, 'bad')}
-                                                className={`p-1.5 rounded-full transition-colors ${item.feedback === 'bad' ? 'bg-red-500/20 text-red-400' : 'hover:bg-[var(--color-interactive-hover)]'}`}
-                                                title={t.tooltips.badResponse}
-                                                aria-pressed={item.feedback === 'bad'}
-                                            >
-                                                <ThumbDownIcon />
-                                            </button>
+                                        <p className="text-[var(--color-text-secondary)] whitespace-pre-wrap text-sm">{item.clientMessage}</p>
+                                    </div>
+
+                                    {/* AI Response */}
+                                    <div className="p-4">
+                                        <p className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text-primary)] mb-3">
+                                            <SparklesIcon className="h-5 w-5 text-cyan-400" />
+                                            {t.you}
+                                        </p>
+                                        <div 
+                                            className="prose-custom prose-sm max-w-none"
+                                            dangerouslySetInnerHTML={{ __html: item.generatedResponseHtml }}
+                                        />
+                                        {item.searchResults && item.searchResults.length > 0 && (
+                                            <div className="mt-4 pt-4 border-t border-[var(--color-border)]/50">
+                                                <h4 className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-secondary)] mb-2">
+                                                    <WebIcon /> {t.searchResults}
+                                                </h4>
+                                                <div className="grid grid-cols-1 gap-2 text-xs">
+                                                    {item.searchResults.map((source, idx) => (
+                                                        <a 
+                                                            key={idx}
+                                                            href={source.uri}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="bg-[var(--color-interactive)]/40 hover:bg-[var(--color-interactive)]/70 p-2 rounded-md truncate transition-colors group"
+                                                            title={source.uri}
+                                                        >
+                                                            <p className="font-medium text-[var(--color-text-secondary)] group-hover:text-cyan-400 truncate">{source.title}</p>
+                                                            <p className="text-[var(--color-text-placeholder)] truncate">{source.uri}</p>
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        <div className="mt-4 pt-4 border-t border-[var(--color-border)]/50 flex flex-wrap justify-between items-center gap-x-4 gap-y-2 text-xs text-[var(--color-text-secondary)]">
+                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                                <div className="flex items-center gap-1.5"><ModeIcon modelId={item.modelId} /> {modelToDisplayName(item.modelId, t)}</div>
+                                                <div className="flex items-center gap-1.5"><ToneIcon /> {item.tone}</div>
+                                                <div className="flex items-center gap-1.5"><StyleIcon /> {item.responseStyle}</div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button 
+                                                    onClick={() => onFeedback(item.id, 'good')}
+                                                    className={`p-1.5 rounded-full transition-colors ${item.feedback === 'good' ? 'bg-cyan-500/20 text-cyan-400' : 'hover:bg-[var(--color-interactive)]'}`}
+                                                    title={t.tooltips.goodResponse}
+                                                >
+                                                    <ThumbUpIcon />
+                                                </button>
+                                                 <button 
+                                                    onClick={() => onFeedback(item.id, 'bad')}
+                                                    className={`p-1.5 rounded-full transition-colors ${item.feedback === 'bad' ? 'bg-red-500/20 text-red-400' : 'hover:bg-[var(--color-interactive)]'}`}
+                                                    title={t.tooltips.badResponse}
+                                                >
+                                                    <ThumbDownIcon />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
